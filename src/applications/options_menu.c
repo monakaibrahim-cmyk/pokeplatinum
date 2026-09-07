@@ -50,6 +50,7 @@
 
 #define SINGLE_ENTRY_HEIGHT 16
 #define FIRST_ENTRY_OFFSET  24
+#define VISIBLE_ENTRY_COUNT (ENTRIES_HEIGHT / 2)
 
 #define NUM_WINDOWS      3
 #define NUM_BG_TEMPLATES 5
@@ -59,6 +60,7 @@
 enum OptionsMenuEntryID {
     ENTRY_TEXT_SPEED = 0,
     ENTRY_SOUND_MODE,
+    ENTRY_GAUGE_UPDATE,
     ENTRY_BATTLE_SCENE,
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
@@ -84,6 +86,7 @@ typedef struct OptionsMenuData {
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
+    u8 entryListOffset;
     BgConfig *bgConfig;
     OptionsMenu options;
     Options *saveOptions;
@@ -105,6 +108,7 @@ typedef struct OptionsMenuData {
         struct {
             OptionsMenuEntry textSpeed;
             OptionsMenuEntry soundMode;
+            OptionsMenuEntry gaugeUpdate;
             OptionsMenuEntry battleScene;
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
@@ -129,6 +133,7 @@ static void LoadBgTiles(OptionsMenuData *menuData);
 static void SetupWindows(OptionsMenuData *menuData);
 
 static void PrintTitleAndEntries(OptionsMenuData *param0);
+static void PrintVisibleEntries(OptionsMenuData *menuData);
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry);
 static void PrintEntryDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
 static void PrintBankEntryAsDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
@@ -157,6 +162,7 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     memset(menuData, 0, sizeof(OptionsMenuData));
 
     menuData->options.textSpeed = Options_TextSpeed(options);
+    menuData->options.gaugeUpdate = Options_GaugeUpdate(options);
     menuData->options.battleScene = Options_BattleScene(options);
     menuData->options.battleStyle = Options_BattleStyle(options);
     menuData->options.soundMode = Options_SoundMode(options);
@@ -176,6 +182,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
 
     if (menuData->saveSelections == 1) {
         menuData->options.textSpeed = menuData->entries.textSpeed.selected;
+        menuData->options.gaugeUpdate = menuData->entries.gaugeUpdate.selected;
         menuData->options.battleScene = menuData->entries.battleScene.selected;
         menuData->options.battleStyle = menuData->entries.battleStyle.selected;
         menuData->options.soundMode = menuData->entries.soundMode.selected;
@@ -184,6 +191,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
+    Options_SetGaugeUpdate(menuData->saveOptions, menuData->options.gaugeUpdate);
     Options_SetBattleScene(menuData->saveOptions, menuData->options.battleScene);
     Options_SetBattleStyle(menuData->saveOptions, menuData->options.battleStyle);
     Options_SetSoundMode(menuData->saveOptions, menuData->options.soundMode);
@@ -679,6 +687,7 @@ static void TeardownWindows(OptionsMenuData *menuData)
 static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedLabel,
     OptionsMenu_Text_SoundModeLabel,
+    OptionsMenu_Text_GaugeUpdateLabel,
     OptionsMenu_Text_BattleSceneLabel,
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
@@ -686,11 +695,49 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_CloseLabel,
 };
 
+static u16 EntryListOffset(const OptionsMenuData *menuData)
+{
+    return menuData->entryListOffset;
+}
+
+static void PrintVisibleEntries(OptionsMenuData *menuData)
+{
+    u16 i;
+    u16 firstEntry = EntryListOffset(menuData);
+    u16 lastEntry = firstEntry + VISIBLE_ENTRY_COUNT;
+    TextColor whiteBg = TEXT_COLOR(1, 2, 15);
+    String *string = String_Init(256, menuData->heapID);
+
+    Window_FillRectWithColor(&menuData->windows.entries,
+        PIXEL_FILL(15),
+        0,
+        0,
+        ENTRIES_WIDTH * 8,
+        ENTRIES_HEIGHT * 8);
+    Window_ClearTilemap(&menuData->windows.entries);
+    Window_DrawStandardFrame(&menuData->windows.entries, TRUE, STANDARD_WINDOW_BASE_TILE, 14);
+
+    for (i = firstEntry; i < lastEntry; i++) {
+        String_Clear(string);
+        MessageLoader_GetString(menuData->msgLoader, sEntryLabels[i], string);
+        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
+            FONT_SYSTEM,
+            string,
+            4,
+            (i - firstEntry) * SINGLE_ENTRY_HEIGHT,
+            TEXT_SPEED_NO_TRANSFER,
+            whiteBg,
+            NULL);
+        PrintEntryChoices(menuData, i);
+    }
+
+    Window_CopyToVRAM(&menuData->windows.entries);
+    String_Free(string);
+}
+
 static void PrintTitleAndEntries(OptionsMenuData *menuData)
 {
-    u16 i; // Must forward-declare to match
     TextColor transparentBg = TEXT_COLOR(1, 2, 0);
-    TextColor whiteBg = TEXT_COLOR(1, 2, 15);
 
     String *string = String_Init(256, menuData->heapID);
     MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_Title, string);
@@ -703,31 +750,16 @@ static void PrintTitleAndEntries(OptionsMenuData *menuData)
         transparentBg,
         NULL);
 
-    for (i = 0; i < MAX_ENTRIES; i++) {
-        String_Clear(string);
-        MessageLoader_GetString(menuData->msgLoader, sEntryLabels[i], string);
-        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
-            FONT_SYSTEM,
-            string,
-            4,
-            16 * i,
-            TEXT_SPEED_NO_TRANSFER,
-            whiteBg,
-            NULL);
-    }
-
-    for (i = 0; i < MAX_ENTRIES; i++) {
-        PrintEntryChoices(menuData, i);
-    }
+    PrintVisibleEntries(menuData);
 
     PrintEntryDescription(menuData, ENTRY_TEXT_SPEED, TRUE);
     Window_CopyToVRAM(&menuData->windows.title);
-    Window_CopyToVRAM(&menuData->windows.entries);
     String_Free(string);
 }
 
 static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     3,
+    2,
     2,
     2,
     2,
@@ -739,6 +771,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
 static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedSlow,
     OptionsMenu_Text_SoundModeStereo,
+    OptionsMenu_Text_GaugeUpdateNormal,
     OptionsMenu_Text_BattleSceneOn,
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
@@ -757,6 +790,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     }
 
     menuData->entries.textSpeed.selected = menuData->options.textSpeed;
+    menuData->entries.gaugeUpdate.selected = menuData->options.gaugeUpdate;
     menuData->entries.battleScene.selected = menuData->options.battleScene;
     menuData->entries.battleStyle.selected = menuData->options.battleStyle;
     menuData->entries.soundMode.selected = menuData->options.soundMode;
@@ -764,25 +798,26 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.messageBoxStyle.selected = menuData->options.messageBoxStyle;
 }
 
-static const s8 sEntryXOffsets[] = { 0, 0, 0, 0, 0, 0, 0 };
+static const s8 sEntryXOffsets[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
 {
     TextColor darkGray, red, color;
     u16 i;
+    u16 displayEntry = entry - EntryListOffset(menuData);
     u8 textSpeed;
     s8 xOffset = 0;
 
     darkGray = TEXT_COLOR(1, 2, 15);
     red = TEXT_COLOR(3, 4, 15);
 
-    Window_FillRectWithColor(&menuData->windows.entries, PIXEL_FILL(15), CHOICES_X + sEntryXOffsets[entry], entry * SINGLE_ENTRY_HEIGHT, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
+    Window_FillRectWithColor(&menuData->windows.entries, PIXEL_FILL(15), CHOICES_X + sEntryXOffsets[entry], displayEntry * SINGLE_ENTRY_HEIGHT, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
     if (entry == ENTRY_MESSAGE_BOX_FRAME) {
         Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
             FONT_SYSTEM,
             menuData->entries.asArray[entry].choices[menuData->entries.asArray[entry].selected],
             48 + CHOICES_X,
-            entry * SINGLE_ENTRY_HEIGHT,
+            displayEntry * SINGLE_ENTRY_HEIGHT,
             TEXT_SPEED_NO_TRANSFER,
             red,
             NULL);
@@ -798,6 +833,8 @@ static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
     } else if (entry == ENTRY_TEXT_SPEED) {
         Options_SetTextSpeed(menuData->saveOptions, menuData->entries.asArray[entry].selected);
         PrintEntryDescription(menuData, entry, FALSE);
+    } else if (entry == ENTRY_GAUGE_UPDATE) {
+        Options_SetGaugeUpdate(menuData->saveOptions, menuData->entries.asArray[entry].selected);
     }
 
     xOffset = 0;
@@ -819,7 +856,7 @@ static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
                 xOffset + CHOICES_X,
-                entry * SINGLE_ENTRY_HEIGHT,
+                displayEntry * SINGLE_ENTRY_HEIGHT,
                 textSpeed,
                 color,
                 NULL);
@@ -829,7 +866,7 @@ static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
                 i * 48 + CHOICES_X + sEntryXOffsets[entry],
-                entry * SINGLE_ENTRY_HEIGHT,
+                displayEntry * SINGLE_ENTRY_HEIGHT,
                 textSpeed,
                 color,
                 NULL);
@@ -900,21 +937,35 @@ static void ProcessMainInput(OptionsMenuData *menuData)
     }
 
     if (JOY_NEW(PAD_KEY_UP)) {
-        menuData->cursor = (menuData->cursor + 7 - 1) % 7;
+        menuData->cursor = (menuData->cursor + MAX_ENTRIES - 1) % MAX_ENTRIES;
+        if (menuData->cursor == MAX_ENTRIES - 1) {
+            menuData->entryListOffset = MAX_ENTRIES - VISIBLE_ENTRY_COUNT;
+        } else if (menuData->cursor < menuData->entryListOffset) {
+            menuData->entryListOffset = menuData->cursor;
+        }
+
         Bg_ScheduleScroll(menuData->bgConfig,
             BG_LAYER_MAIN_0,
             BG_OFFSET_UPDATE_SET_Y,
-            -(menuData->cursor * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
+            -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
 
+        PrintVisibleEntries(menuData);
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     } else if (JOY_NEW(PAD_KEY_DOWN)) {
-        menuData->cursor = (menuData->cursor + 1) % 7;
+        menuData->cursor = (menuData->cursor + 1) % MAX_ENTRIES;
+        if (menuData->cursor == 0) {
+            menuData->entryListOffset = 0;
+        } else if (menuData->cursor >= menuData->entryListOffset + VISIBLE_ENTRY_COUNT) {
+            menuData->entryListOffset++;
+        }
+
         Bg_ScheduleScroll(menuData->bgConfig,
             BG_LAYER_MAIN_0,
             BG_OFFSET_UPDATE_SET_Y,
-            -(menuData->cursor * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
+            -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
 
+        PrintVisibleEntries(menuData);
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     }
@@ -923,6 +974,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
 static BOOL ChangesWereMade(OptionsMenuData *menuData)
 {
     return menuData->options.textSpeed != menuData->entries.textSpeed.selected
+        || menuData->options.gaugeUpdate != menuData->entries.gaugeUpdate.selected
         || menuData->options.battleScene != menuData->entries.battleScene.selected
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
@@ -957,6 +1009,7 @@ static u32 ProcessConfirmationInput(OptionsMenuData *menuData)
 static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedDescription,
     OptionsMenu_Text_SoundModeDescription,
+    OptionsMenu_Text_GaugeUpdateDescription,
     OptionsMenu_Text_BattleSceneDescription,
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,

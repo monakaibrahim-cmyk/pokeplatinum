@@ -7,6 +7,11 @@ enum OptionsTextSpeed {
     OPTIONS_TEXT_SPEED_FAST
 };
 
+enum GuageUpdate {
+    OPTIONS_GAUGE_NORMAL = 0,
+    OPTIONS_GAUGE_INSTANT
+};
+
 enum OptionsSoundMode {
     OPTIONS_SOUND_MODE_STEREO = 0,
     OPTIONS_SOUND_MODE_MONO

@@ -77,6 +77,16 @@ u8 Options_TextFrameDelay(const Options *options)
     }
 }
 
+int Options_GaugeUpdate(const Options* options)
+{
+    return options->gaugeUpdate;
+}
+
+void Options_SetGaugeUpdate(Options *options, enum GuageUpdate mode)
+{
+    options->gaugeUpdate = mode;
+}
+
 int Options_SoundMode(const Options *options)
 {
     return options->soundMode;

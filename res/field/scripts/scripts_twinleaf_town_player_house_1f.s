@@ -131,6 +131,7 @@ TwinleafTownPlayerHouse1F_OnFrame_CutsceneAfterRivalBattle:
     BufferPlayerName 0
     Message TwinleafTownPlayerHouse1F_Text_PutTheseOn
     GiveRunningShoes
+    AddItem ITEM_FULL_RESTORE, 150, VAR_RESULT
     BufferPlayerName 0
     Message TwinleafTownPlayerHouse1F_Text_PlayerReceivedRunningShoes
     PlayFanfare SEQ_FANFA4_sseq
@@ -505,7 +506,7 @@ TwinleafTownPlayerHouse1F_Unused2:
     BufferPlayerName 0
     Message TwinleafTownPlayerHouse1F_Text_PutTheseOn
     GiveBag
-    AddItem ITEM_FULL_RESTORE, 500, VAR_RESULT
+    AddItem ITEM_POTION, 1, VAR_RESULT
     BufferPlayerName 0
     Message TwinleafTownPlayerHouse1F_Text_PlayerReceivedRunningShoes
     PlayFanfare SEQ_FANFA4_sseq

@@ -224,6 +224,25 @@
     {
       "id": "OptionsMenu_Text_CloseDescription",
       "en_US": "Return to the game."
+    },
+    {
+      "id": "OptionsMenu_Text_GaugeUpdateLabel",
+      "en_US": "HP/EXP BAR GAUGE"
+    },
+    {
+      "id": "OptionsMenu_Text_GaugeUpdateNormal",
+      "en_US": "NORMAL"
+    },
+    {
+      "id": "OptionsMenu_Text_GaugeUpdateInstant",
+      "en_US": "INSTANT"
+    },
+    {
+      "id": "OptionsMenu_Text_GaugeUpdateDescription",
+      "en_US": [
+        "Choose between Normal Gauge Update or\n",
+        "Instant Gauge Update."
+      ]
     }
   ]
 }
