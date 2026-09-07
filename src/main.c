@@ -132,7 +132,8 @@ void NitroMain(void)
             RunApplication();
             SysTaskManager_ExecuteTasks(gSystem.mainTaskMgr);
             SysTaskManager_ExecuteTasks(gSystem.printTaskMgr);
-
+            
+            // Todo: add Flag in option to uncap Frame Rate
             if (!gSystem.frameCounter) {
                 OS_WaitIrq(TRUE, OS_IE_V_BLANK);
                 gSystem.vblankCounter++;

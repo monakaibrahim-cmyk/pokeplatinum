@@ -24,8 +24,10 @@ FieldMoves_CutTree:
     PlaySE SE_CONFIRM_sseq_3
     LockAll
     FacePlayer
-    FindPartySlotWithMove VAR_RESULT, MOVE_CUT
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseCut
+    CheckTMHMMoveCompatibility MOVE_CUT, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseCut
+    CheckItem ITEM_HM01, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseCut
     CheckBadgeAcquired BADGE_ID_FOREST, VAR_RESULT
     GoToIfEq VAR_RESULT, FALSE, FieldMoves_CantUseCut
     Message FieldMoves_Text_WouldYouLikeToUseCut
@@ -45,9 +47,7 @@ FieldMoves_CantUseCut:
     End
 
 FieldMoves_UseCutFromField:
-    FindPartySlotWithMove VAR_RESULT, MOVE_CUT
-    SetVar VAR_0x8004, VAR_RESULT
-    BufferPartyMonNickname 0, VAR_RESULT
+    BufferPartyMonNickname 0, VAR_0x8004
     Message FieldMoves_Text_PokemonUsedCut
     CloseMessage
     PlayHMCutIn VAR_0x8004

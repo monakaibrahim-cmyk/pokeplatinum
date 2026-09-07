@@ -1788,31 +1788,79 @@ static void sub_0207FFC8(PartyMenuApplication *application)
     Sprite_SetExplicitPalette2(application->sprites[PARTY_MENU_SPRITE_CURSOR_NORMAL], 1);
 }
 
+BOOL CheckIfInList(u16 value, u16 array[], u32 size)
+{
+    for (u32 i = 0; i < size; i++)
+    {
+        if (value == array[i])
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 static u8 GetContextMenuEntriesForPartyMon(PartyMenuApplication *application, u8 *menuEntriesBuffer)
 {
     Pokemon *mon = Party_GetPokemonBySlotIndex(application->partyMenu->party, application->currPartySlot);
+    Bag *bag = SaveData_GetBag(SaveData_Ptr());
     u16 move;
     u8 fieldMoveIndex = 0, i, count = 0, fieldEffect;
 
     menuEntriesBuffer[count] = 1;
     count++;
 
+    u16 tmsToInclude[] = {
+        ITEM_HM01,
+        ITEM_HM02,
+        ITEM_HM03,
+        ITEM_HM04,
+        ITEM_HM05,
+        ITEM_HM06,
+        ITEM_HM07,
+        ITEM_HM08,
+        ITEM_TM28,
+        ITEM_TM70
+    };
+
+    u16 movesIncludedIfLearned[] = {MOVE_SWEET_SCENT, MOVE_SOFTBOILED, MOVE_CHATTER, MOVE_TELEPORT};
+
     if (FieldSystem_IsInBattleTowerSalon(application->partyMenu->fieldSystem) == FALSE) {
         if (application->partyMembers[application->currPartySlot].isEgg == FALSE) {
-            for (i = 0; i < 4; i++) {
-                move = (u16)Pokemon_GetValue(mon, MON_DATA_MOVE1 + i, NULL);
+            for (i = 0; i < NELEMS(tmsToInclude); i++) {
+                BOOL compatible = Pokemon_CanLearnTM(mon, Item_TMHMNumber(tmsToInclude[i]));
 
-                if (move == 0) {
-                    break;
+                if (!compatible) {
+                    continue;
                 }
 
+                move = Item_MoveForTMHM(tmsToInclude[i]);
                 fieldEffect = GetFieldMoveIndex(move);
 
                 if (fieldEffect != 0xff) {
-                    menuEntriesBuffer[count] = fieldEffect;
-                    count++;
-                    PartyMenu_SetKnownFieldMove(application, move, fieldMoveIndex);
-                    fieldMoveIndex++;
+                    BOOL hasTMHM = Bag_CanRemoveItem(bag, tmsToInclude[i], 1, HEAP_ID_PARTY_MENU);
+
+                    if (hasTMHM) {
+                        menuEntriesBuffer[count] = fieldEffect;
+                        count++;
+                        PartyMenu_SetKnownFieldMove(application, move, fieldMoveIndex);
+                        fieldMoveIndex++;
+                    }
+                }
+            }
+
+            for (i = 0; i < 4; i++) {
+                move = Pokemon_GetValue(mon, MON_DATA_MOVE1 + i, NULL);
+
+                if (CheckIfInList(move, movesIncludedIfLearned, NELEMS(movesIncludedIfLearned))) {
+                    fieldEffect = GetFieldMoveIndex(move);
+
+                    if (fieldEffect != 0xff) {
+                        menuEntriesBuffer[count] = fieldEffect;
+                        count++;
+                        PartyMenu_SetKnownFieldMove(application, move, fieldMoveIndex);
+                        fieldMoveIndex++;
+                    }
                 }
             }
 

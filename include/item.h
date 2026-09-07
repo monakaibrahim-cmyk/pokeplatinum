@@ -338,4 +338,6 @@ void *ItemTable_Load(enum HeapID heapID);
  */
 ItemData *ItemTable_Index(ItemData *itemTable, u16 index);
 
+u16 Item_TMHMForMove(u16 move);
+
 #endif // POKEPLATINUM_ITEM_DATA_H

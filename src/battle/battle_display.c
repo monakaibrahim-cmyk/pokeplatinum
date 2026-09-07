@@ -4896,18 +4896,15 @@ static void Task_FlickerBattler(SysTask *task, void *data)
 static void Task_UpdateHPGauge(SysTask *task, void *data)
 {
     HealthBox *healthbox = data;
-    int result;
 
     switch (healthbox->state) {
     case 0:
         HealthBox_CalcHP(healthbox, healthbox->damage);
         healthbox->state++;
     case 1:
-        result = Healthbox_DrawHPBar(healthbox);
+        while(Healthbox_DrawHPBar(healthbox) != -1);
 
-        if (result == -1) {
-            healthbox->state++;
-        }
+        healthbox->state++;
         break;
     default:
         BattleController_EmitClearCommand(healthbox->battleSys, healthbox->battler, healthbox->command);
@@ -4920,7 +4917,6 @@ static void Task_UpdateHPGauge(SysTask *task, void *data)
 static void Task_UpdateExpGauge(SysTask *task, void *data)
 {
     HealthBox *healthbox = data;
-    int result;
 
     switch (healthbox->state) {
     case 0:
@@ -4933,24 +4929,9 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
             healthbox->expSoundTimer++;
         }
 
-        result = Healthbox_DrawExpBar(healthbox);
-
-        if (result == -1) {
-            if (healthbox->expSoundTimer >= 8) {
-                Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
-                healthbox->state = 100;
-            } else {
-                healthbox->state++;
-            }
-        }
-        break;
-    case 2:
-        healthbox->expSoundTimer++;
-
-        if (healthbox->expSoundTimer >= 8) {
-            Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
-            healthbox->state = 100;
-        }
+        while(Healthbox_DrawExpBar(healthbox) != -1);
+        Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
+        healthbox->state = 100;
         break;
     default:
         BattleController_EmitClearCommand(healthbox->battleSys, healthbox->battler, healthbox->command);

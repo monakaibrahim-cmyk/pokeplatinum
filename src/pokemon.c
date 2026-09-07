@@ -2751,7 +2751,7 @@ static u8 BoxPokemon_IsShiny(BoxPokemon *boxMon)
 
 static inline BOOL Pokemon_InlineIsPersonalityShiny(u32 monOTID, u32 monPersonality)
 {
-    return (((monOTID & 0xFFFF0000) >> 16) ^ (monOTID & 0xFFFF) ^ ((monPersonality & 0xFFFF0000) >> 16) ^ (monPersonality & 0xFFFF)) < 8;
+    return (((monOTID & 0xFFFF0000) >> 16) ^ (monOTID & 0xFFFF) ^ ((monPersonality & 0xFFFF0000) >> 16) ^ (monPersonality & 0xFFFF)) < 16; // 1 / 4096
 }
 
 u8 Pokemon_IsPersonalityShiny(u32 monOTID, u32 monPersonality)
@@ -4651,9 +4651,27 @@ void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokebal
 
 static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum HeapID heapID)
 {
+    u8 maxIv = 31;
+    u16 maxEv = 252;
+    
     UpdateBoxMonStatusAndTrainerInfo(boxMon, trainer, 0, metLocation, heapID);
     BoxPokemon_SetValue(boxMon, MON_DATA_MET_GAME, &gGameVersion);
     BoxPokemon_SetValue(boxMon, MON_DATA_POKEBALL, &monPokeball);
+
+    BoxPokemon_SetValue(boxMon, MON_DATA_HP_IV, &maxIv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_ATK_IV, &maxIv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_DEF_IV, &maxIv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_IV, &maxIv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_IV, &maxIv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_IV, &maxIv);
+
+    BoxPokemon_SetValue(boxMon, MON_DATA_HP_EV, &maxEv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_ATK_EV, &maxEv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_DEF_EV, &maxEv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_EV, &maxEv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_EV, &maxEv);
+    BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_EV, &maxEv);
+
     BoxPokemon_SetValue(boxMon, MON_DATA_MET_TERRAIN, &metTerrain);
 }
 

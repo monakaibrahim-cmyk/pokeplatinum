@@ -233,22 +233,34 @@ static void SysTask_RunTextPrinter(SysTask *task, void *data)
 
     TextPrinter *printer = (TextPrinter *)data;
 
+    printer->textSpeedBottom = 0;
+
     if (printer->callbackResult == 0) {
         printer->callbackParam = 0;
         Text_GenerateFontHalfRowLookupTable(printer->template.fgColor, printer->template.bgColor, printer->template.shadowColor);
 
-        switch (TextPrinter_Render(printer)) {
-        case RENDER_PRINT:
-            Window_CopyToVRAM(printer->template.window);
-            // fall-through
+        enum RenderResult result;
 
-        case RENDER_UPDATE:
-            if (printer->callback != NULL) {
-                printer->callbackResult = (printer->callback)(&printer->template, printer->callbackParam);
+        do {
+            result = TextPrinter_Render(printer);
+
+            if (result == RENDER_PRINT) {
+                Window_CopyToVRAM(printer->template.window);
             }
-            return;
 
-        case RENDER_FINISH:
+            if (result == RENDER_PRINT || result == RENDER_UPDATE) {
+                if (printer->callback != NULL) {
+                    printer->callbackResult = (printer->callback)(&printer->template, printer->callbackParam);
+                }
+            }
+
+            if (result == RENDER_UPDATE || printer->callbackResult != 0) {
+                return;
+            }
+
+        } while (result == RENDER_PRINT);
+
+        if (result == RENDER_FINISH) {
             Text_DestroyPrinterTask(printer->id);
             return;
         }

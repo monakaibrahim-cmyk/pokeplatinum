@@ -297,6 +297,23 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
         }
     }
 
+    u8 maxIv = 31;
+    u16 maxEv = 252;
+
+    Pokemon_SetValue(mon, MON_DATA_HP_IV, &maxIv);
+    Pokemon_SetValue(mon, MON_DATA_ATK_IV, &maxIv);
+    Pokemon_SetValue(mon, MON_DATA_DEF_IV, &maxIv);
+    Pokemon_SetValue(mon, MON_DATA_SPEED_IV, &maxIv);
+    Pokemon_SetValue(mon, MON_DATA_SPATK_IV, &maxIv);
+    Pokemon_SetValue(mon, MON_DATA_SPDEF_IV, &maxIv);
+
+    Pokemon_SetValue(mon, MON_DATA_HP_EV, &maxEv);
+    Pokemon_SetValue(mon, MON_DATA_ATK_EV, &maxEv);
+    Pokemon_SetValue(mon, MON_DATA_DEF_EV, &maxEv);
+    Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
+    Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
+    Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
+
     Pokemon_CalcLevelAndStats(mon);
 
     Party *party = SaveData_GetParty(fieldSystem->saveData);

@@ -2113,6 +2113,9 @@ static int BattleControllerPlayer_CheckObedience(BattleSystem *battleSys, Battle
     u32 battleType = BattleSystem_GetBattleType(battleSys);
     TrainerInfo *trInfo = BattleSystem_GetTrainerInfo(battleSys, 0);
 
+    // Always return Success to disallow Disobedience
+    return OBEY_CHECK_SUCCESS;
+
     // These separate sentinels do not match if chained into a single sentinel
     if (battleType & BATTLE_TYPE_FRONTIER_LINK) {
         return OBEY_CHECK_SUCCESS;

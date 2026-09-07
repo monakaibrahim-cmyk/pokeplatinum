@@ -401,3 +401,13 @@ ItemData *ItemTable_Index(ItemData *itemTable, u16 index)
 {
     return (ItemData *)((u8 *)itemTable + index * sizeof(ItemData));
 }
+
+u16 Item_TMHMForMove(u16 move)
+{
+    for (int i = 0; i < NELEMS(sTMHMMoves); i++) {
+        if (move == sTMHMMoves[i]) {
+            return i;
+        }
+    }
+    return 0xFFFF;
+}

@@ -798,7 +798,7 @@ static SpeciesDexData proc_dexdata(datafile_t *df, size_t i, const char *base_di
         dp_free(&origin_df);
     }
 
-    const char *name = dp_string(dp_objmemb(dp_objmemb(dexdata, "en"), "name"));
+    const char *name = dp_string(dp_objmemb(dp_objmemb(dexdata, "jp"), "name"));
     if (name) strcpy(name_store[i], name); // NOTE: This is an error later
     return (SpeciesDexData) {
         .index = {
@@ -1101,7 +1101,7 @@ static void emit_textbanks(datafile_t *df, size_t i, const char *species, Specie
     char buf[BUFSIZE] = { 0 };
 
     datanode_t  dexdata = dp_get(df, ".pokedex_data");
-    const char *name    = dp_string(dp_objmemb(dp_objmemb(dexdata, "en"), "name"));
+    const char *name    = dp_string(dp_objmemb(dp_objmemb(dexdata, "jp"), "name"));
 
     datanode_t entry = dp_arr_appobject(&textbanks[T_NAMES].root);
     dp_obj_putstring(&entry, "id", strfmt("species_name_%s", species));
@@ -1192,7 +1192,7 @@ static void emit_textbanks(datafile_t *df, size_t i, const char *species, Specie
     emit_dexbanks(T_POKEDEX_ENTRY_JP, "jp", true);
 
     entry = dp_arr_appobject(&textbanks[T_CATEGORY].root);
-    const char *category = dp_string(dp_objmemb(dp_objmemb(dexdata, "en"), "category"));
+    const char *category = dp_string(dp_objmemb(dp_objmemb(dexdata, "jp"), "category"));
     dp_obj_putstring(&entry, "id", strfmt("species_category_%s", species));
     dp_obj_putstring(&entry, "en_US", category);
 

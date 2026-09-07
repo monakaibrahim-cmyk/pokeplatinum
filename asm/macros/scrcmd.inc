@@ -4995,7 +4995,17 @@
     .byte \floor
     .endm
 
+    .macro CheckTMHMMoveCompatibility move, slot, result
+    .short SCRCMD_CHECKTMHMMOVECOMPATIBILITY
+    .short \move
+    .short \slot
+    .short \result
+    .endm
 
+    .macro SetRepelSteps itemVar
+    .short SCRCMD_SETREPELSTEPS
+    .short \itemVar
+    .endm
 
     .macro GoToIfLt varID, valueOrVarID, offset
     CompareVar \varID, \valueOrVarID

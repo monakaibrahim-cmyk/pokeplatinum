@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ Custom ]
     paths-ignore:
       - '**.md'
   pull_request:
@@ -35,6 +35,15 @@ jobs:
 
       - name: Build Repo
         run: make check
+
+      # Upload the built ROM as a GitHub Actions artifact
+      - name: Upload ROM
+        uses: actions/upload-artifact@v7
+        with:
+          name: pokeplatinum-rom
+          path: build/pokeplatinum.us.nds
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Checkout xMAP
         if: ${{ github.event_name == 'push' }}

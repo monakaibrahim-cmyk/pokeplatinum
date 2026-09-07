@@ -7132,3 +7132,24 @@ static BOOL ScrCmd_CheckPartyHasFatefulEncounterRegigigas(ScriptContext *ctx)
 
     return FALSE;
 }
+
+static BOOL ScrCmd_CheckTMHMMoveCompatibility(ScriptContext *ctx)
+{
+    u16 move = ScriptContext_GetVar(ctx);
+    u16 *slot = ScriptContext_GetVarPointer(ctx);
+    u16 *result = ScriptContext_GetVarPointer(ctx);
+
+    Party *party = SaveData_GetParty(ctx->fieldSystem->saveData);
+
+    for (int i = 0; i < party->currentCount; i++) {
+        Pokemon *mon = Party_GetPokemonBySlotIndex(party, i);
+        *result = Pokemon_CanLearnTM(mon, Item_TMHMForMove(move));
+        
+        if (*result) {
+            *slot = i;
+            break;
+        }
+    }
+
+    return FALSE;
+}
