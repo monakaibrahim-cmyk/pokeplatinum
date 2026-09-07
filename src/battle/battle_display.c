@@ -76,6 +76,8 @@
 #include "text.h"
 #include "trainer_info.h"
 #include "unk_0201567C.h"
+#include "game_options.h"
+#include "save_player.h"
 
 #include "res/text/bank/battle_strings.h"
 
@@ -4896,15 +4898,29 @@ static void Task_FlickerBattler(SysTask *task, void *data)
 static void Task_UpdateHPGauge(SysTask *task, void *data)
 {
     HealthBox *healthbox = data;
+    Options *options = BattleSystem_GetOptions(healthbox->battleSys);
+    int result;
 
     switch (healthbox->state) {
     case 0:
         HealthBox_CalcHP(healthbox, healthbox->damage);
         healthbox->state++;
     case 1:
-        while(Healthbox_DrawHPBar(healthbox) != -1);
+        if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT)
+        {
+            while(Healthbox_DrawHPBar(healthbox) != -1);
 
-        healthbox->state++;
+            healthbox->state++;
+        }
+        else
+        {
+            result = Healthbox_DrawHPBar(healthbox);
+
+            if (result == -1) {
+                healthbox->state++;
+            }
+        }
+
         break;
     default:
         BattleController_EmitClearCommand(healthbox->battleSys, healthbox->battler, healthbox->command);
@@ -4917,6 +4933,8 @@ static void Task_UpdateHPGauge(SysTask *task, void *data)
 static void Task_UpdateExpGauge(SysTask *task, void *data)
 {
     HealthBox *healthbox = data;
+    Options *options = BattleSystem_GetOptions(healthbox->battleSys);
+    int result;
 
     switch (healthbox->state) {
     case 0:
@@ -4928,10 +4946,29 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
         if (healthbox->expSoundTimer < 8) {
             healthbox->expSoundTimer++;
         }
+        if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT) {
+            while(Healthbox_DrawExpBar(healthbox) != -1);
+            result = -1;
+        } else {
+            result = Healthbox_DrawExpBar(healthbox);
+        }
 
-        while(Healthbox_DrawExpBar(healthbox) != -1);
-        Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
-        healthbox->state = 100;
+        if (result == -1) {
+            if (healthbox->expSoundTimer >= 8) {
+                Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
+                healthbox->state = 100;
+            } else {
+                healthbox->state++;
+            }
+        }
+        break;
+    case 2:
+        healthbox->expSoundTimer++;
+
+        if (healthbox->expSoundTimer >= 8) {
+            Sound_StopEffect(SEQ_SE_DP_EXP_sseq, 0);
+            healthbox->state = 100;
+        }
         break;
     default:
         BattleController_EmitClearCommand(healthbox->battleSys, healthbox->battler, healthbox->command);
