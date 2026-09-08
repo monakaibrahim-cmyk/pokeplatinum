@@ -28,8 +28,14 @@ void Options_Init(Options *options)
 
     options->textSpeed = OPTIONS_TEXT_SPEED_FAST;
     options->soundMode = OPTIONS_SOUND_MODE_STEREO;
+
+    // Custom Modification
     options->gaugeUpdate = OPTIONS_GAUGE_INSTANT;
     options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
+    options->frameRate = OPTIONS_FRAMERATE_CAPPED;
+    options->disobedient = OPTIONS_DISOBEDIENT_ON;
+    // options->easyCatch = OPTIONS_EASYCATCH_OFF;
+
     options->battleStyle = OPTIONS_BATTLE_STYLE_SHIFT;
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
     options->buttonMode = OPTIONS_BUTTON_MODE_NORMAL;
@@ -109,6 +115,26 @@ void Options_SetFrameRate(Options *options, enum OptionsFrameRate rate)
 {
     options->frameRate = rate;
 }
+
+int Options_Disobedient(const Options *options)
+{
+    return options->disobedient;
+}
+
+void Options_SetDisobedient(Options *options, enum OptionsDisobedient mode)
+{
+    options->disobedient = mode;
+}
+
+// int Options_EasyCatch(const Options *options)
+// {
+//     return options->easyCatch;
+// }
+
+// void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
+// {
+//     options->easyCatch = mode;
+// }
 
 ////////////////////////////////////////////////////////
 

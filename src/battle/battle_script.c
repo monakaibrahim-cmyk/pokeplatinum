@@ -10907,6 +10907,11 @@ static int BattleScript_CalcCatchShakes(BattleSystem *battleSys, BattleContext *
         return BALL_3_SHAKES_SUCCESS;
     }
 
+    /* Todo: Easy Catch Mode
+    if (Options_EasyCatch(BattleSystem_GetOptions(battleSys)) == OPTIONS_EASYCATCH_ON) {
+        return BALL_3_SHAKES_SUCCESS;
+    }*/
+
     u32 speciesMod;
     if (battleCtx->msgItemTemp == ITEM_SAFARI_BALL) {
         speciesMod = SpeciesData_GetSpeciesValue(battleCtx->battleMons[battleCtx->defender].species, SPECIES_DATA_CATCH_RATE);

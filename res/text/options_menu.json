@@ -278,8 +278,46 @@
     {
       "id": "OptionsMenu_Text_FrameRateDescription",
       "en_US": [
-        "Choose between capped or uncapped frame rate.\n",
+        "Choose between capped or uncapped FPS.\n",
         "Uncapped is 60fps."
+      ]
+    },
+    {
+      "id": "OptionsMenu_Text_DisobedientLabel",
+      "en_US": "DISOBEDIENT"
+    },
+    {
+      "id": "OptionsMenu_Text_DisobedientOn",
+      "en_US": "ON"
+    },
+    {
+      "id": "OptionsMenu_Text_DisobedientOff",
+      "en_US": "OFF"
+    },
+    {
+      "id": "OptionsMenu_Text_DisobedientDescription",
+      "en_US": [
+        "Choose whether Pokémon can disobey based\n",
+        "on badge count."
+      ]
+    },
+    {
+      "id": "OptionsMenu_Text_EasyCatchLabel",
+      "en_US": "EASY CATCH"
+    },
+    {
+      "id": "OptionsMenu_Text_EasyCatchOff",
+      "en_US": "OFF"
+    },
+    {
+      "id": "OptionsMenu_Text_EasyCatchOn",
+      "en_US": "ON"
+    },
+    {
+      "id": "OptionsMenu_Text_EasyCatchDescription",
+      "en_US": [
+        "Turn all Pokeball Catch Rate\n",
+        "into Master Ball."
       ]
     }
   ]
