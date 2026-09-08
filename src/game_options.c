@@ -79,6 +79,7 @@ u8 Options_TextFrameDelay(const Options *options)
     }
 }
 
+// Custom Modification
 int Options_GaugeUpdate(const Options* options)
 {
     return options->gaugeUpdate;
@@ -98,6 +99,18 @@ void Options_SetEvIvMode(Options *options, enum OptionsEvIvMode mode)
 {
     options->evIvMode = mode;
 }
+
+int Options_FrameRate(const Options *options)
+{
+    return options->frameRate;
+}
+
+void Options_SetFrameRate(Options *options, enum OptionsFrameRate rate)
+{
+    options->frameRate = rate;
+}
+
+////////////////////////////////////////////////////////
 
 int Options_SoundMode(const Options *options)
 {

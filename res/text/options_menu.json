@@ -260,8 +260,26 @@
       "id": "OptionsMenu_Text_EvIvModeDescription",
       "en_US": [
         "Choose between Normal or Max EV/IV.\n",
-        "Pokémon Obtained through Catches/Events\n",
-        "will have either normal or maxed Evs/Ivs."
+        "PCatches/Events will have maxed Stats"
+      ]
+    },
+    {
+      "id": "OptionsMenu_Text_FrameRateLabel",
+      "en_US": "FRAMERATE"
+    },
+    {
+      "id": "OptionsMenu_Text_FrameRateCapped",
+      "en_US": "CAPPED"
+    },
+    {
+      "id": "OptionsMenu_Text_FrameRateUncapped",
+      "en_US": "UNCAPPED"
+    },
+    {
+      "id": "OptionsMenu_Text_FrameRateDescription",
+      "en_US": [
+        "Choose between capped or uncapped frame rate.\n",
+        "Uncapped is 60fps."
       ]
     }
   ]

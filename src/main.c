@@ -14,6 +14,7 @@
 #include "font.h"
 #include "game_overlay.h"
 #include "game_start.h"
+#include "game_options.h"
 #include "main.h"
 #include "math_util.h"
 #include "overlay_manager.h"
@@ -134,7 +135,7 @@ void NitroMain(void)
             SysTaskManager_ExecuteTasks(gSystem.printTaskMgr);
             
             // Todo: add Flag in option to uncap Frame Rate
-            if (!gSystem.frameCounter) {
+            if (!gSystem.frameCounter && Options_FrameRate(SaveData_GetOptions(sApplication.args.saveData)) == OPTIONS_FRAMERATE_CAPPED) {
                 OS_WaitIrq(TRUE, OS_IE_V_BLANK);
                 gSystem.vblankCounter++;
             }

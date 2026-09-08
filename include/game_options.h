@@ -9,11 +9,12 @@ typedef struct Options {
     u16 textSpeed : 4;
     u16 soundMode : 2;
     u16 gaugeUpdate : 2;
+    u16 evIvMode : 2;
+    u16 frameRate : 2; 
     u16 battleStyle : 1;
     u16 battleScene : 1;
     u16 buttonMode : 2;
     u16 frame : 5;
-    u16 evIvMode : 2;
     u16 : 1;
 } Options;
 
@@ -23,10 +24,15 @@ void Options_Init(Options *options);
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode);
 int Options_TextSpeed(const Options *options);
 void Options_SetTextSpeed(Options *options, enum OptionsTextSpeed speed);
+
+// Custom Modification
 int Options_GaugeUpdate(const Options* options);
 void Options_SetGaugeUpdate(Options *options, enum GuageUpdate mode);
 int Options_EvIvMode(const Options *options);
 void Options_SetEvIvMode(Options *options, enum OptionsEvIvMode mode);
+int Options_FrameRate(const Options *options);
+void Options_SetFrameRate(Options *options, enum OptionsFrameRate rate);
+
 u8 Options_TextFrameDelay(const Options *options);
 int Options_SoundMode(const Options *options);
 void Options_SetSoundMode(Options *options, enum OptionsSoundMode mode);

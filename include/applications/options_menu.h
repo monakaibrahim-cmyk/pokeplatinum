@@ -8,6 +8,7 @@ typedef struct OptionsMenu {
     u16 soundMode : 2;
     u16 gaugeUpdate : 2;
     u16 evIvMode : 2;
+    u16 frameRate : 2;
     u16 battleScene : 1;
     u16 battleStyle : 1;
     u16 buttonMode : 2;

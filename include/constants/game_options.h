@@ -17,6 +17,11 @@ enum OptionsEvIvMode {
     OPTIONS_EV_IV_MODE_MAX
 };
 
+enum OptionsFrameRate {
+    OPTIONS_FRAMERATE_CAPPED = 0,
+    OPTIONS_FRAMERATE_UNCAPPED,
+};
+
 enum OptionsSoundMode {
     OPTIONS_SOUND_MODE_STEREO = 0,
     OPTIONS_SOUND_MODE_MONO

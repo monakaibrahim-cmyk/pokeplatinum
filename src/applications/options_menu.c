@@ -62,6 +62,7 @@ enum OptionsMenuEntryID {
     ENTRY_SOUND_MODE,
     ENTRY_GAUGE_UPDATE,
     ENTRY_EV_IV_MODE,
+    ENTRY_FRAMERATE,
     ENTRY_BATTLE_SCENE,
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
@@ -83,7 +84,7 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 3;
+    u32 cursor : 5;
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
@@ -111,6 +112,7 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry soundMode;
             OptionsMenuEntry gaugeUpdate;
             OptionsMenuEntry evIvMode;
+            OptionsMenuEntry frameRate;
             OptionsMenuEntry battleScene;
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
@@ -164,8 +166,12 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     memset(menuData, 0, sizeof(OptionsMenuData));
 
     menuData->options.textSpeed = Options_TextSpeed(options);
+
+    // Custom Modification
     menuData->options.gaugeUpdate = Options_GaugeUpdate(options);
     menuData->options.evIvMode = Options_EvIvMode(options);
+    menuData->options.frameRate = Options_FrameRate(options);
+
     menuData->options.battleScene = Options_BattleScene(options);
     menuData->options.battleStyle = Options_BattleStyle(options);
     menuData->options.soundMode = Options_SoundMode(options);
@@ -185,8 +191,12 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
 
     if (menuData->saveSelections == 1) {
         menuData->options.textSpeed = menuData->entries.textSpeed.selected;
+
+        // Custom Modification
         menuData->options.gaugeUpdate = menuData->entries.gaugeUpdate.selected;
         menuData->options.evIvMode = menuData->entries.evIvMode.selected;
+        menuData->options.frameRate = menuData->entries.frameRate.selected;
+
         menuData->options.battleScene = menuData->entries.battleScene.selected;
         menuData->options.battleStyle = menuData->entries.battleStyle.selected;
         menuData->options.soundMode = menuData->entries.soundMode.selected;
@@ -195,8 +205,12 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
+
+    // Custom Modifiation
     Options_SetGaugeUpdate(menuData->saveOptions, menuData->options.gaugeUpdate);
     Options_SetEvIvMode(menuData->saveOptions, menuData->options.evIvMode);
+    Options_SetFrameRate(menuData->saveOptions, menuData->options.frameRate);
+
     Options_SetBattleScene(menuData->saveOptions, menuData->options.battleScene);
     Options_SetBattleStyle(menuData->saveOptions, menuData->options.battleStyle);
     Options_SetSoundMode(menuData->saveOptions, menuData->options.soundMode);
@@ -694,6 +708,7 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_SoundModeLabel,
     OptionsMenu_Text_GaugeUpdateLabel,
     OptionsMenu_Text_EvIvModeLabel,
+    OptionsMenu_Text_FrameRateLabel,
     OptionsMenu_Text_BattleSceneLabel,
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
@@ -770,6 +785,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     2,
     2,
     2,
+    2,
     3,
     20,
     0,
@@ -780,6 +796,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_SoundModeStereo,
     OptionsMenu_Text_GaugeUpdateNormal,
     OptionsMenu_Text_EvIvModeNormal,
+    OptionsMenu_Text_FrameRateCapped,
     OptionsMenu_Text_BattleSceneOn,
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
@@ -798,8 +815,12 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     }
 
     menuData->entries.textSpeed.selected = menuData->options.textSpeed;
+
+    // Custom Modification
     menuData->entries.gaugeUpdate.selected = menuData->options.gaugeUpdate;
     menuData->entries.evIvMode.selected = menuData->options.evIvMode;
+    menuData->entries.frameRate.selected = menuData->options.frameRate;
+
     menuData->entries.battleScene.selected = menuData->options.battleScene;
     menuData->entries.battleStyle.selected = menuData->options.battleStyle;
     menuData->entries.soundMode.selected = menuData->options.soundMode;
@@ -807,7 +828,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.messageBoxStyle.selected = menuData->options.messageBoxStyle;
 }
 
-static const s8 sEntryXOffsets[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static const s8 sEntryXOffsets[MAX_ENTRIES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
 {
@@ -992,6 +1013,7 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
     return menuData->options.textSpeed != menuData->entries.textSpeed.selected
         || menuData->options.gaugeUpdate != menuData->entries.gaugeUpdate.selected
         || menuData->options.evIvMode != menuData->entries.evIvMode.selected
+        || menuData->options.frameRate != menuData->entries.frameRate.selected
         || menuData->options.battleScene != menuData->entries.battleScene.selected
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
@@ -1028,6 +1050,7 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_SoundModeDescription,
     OptionsMenu_Text_GaugeUpdateDescription,
     OptionsMenu_Text_EvIvModeDescription,
+    OptionsMenu_Text_FrameRateDescription,
     OptionsMenu_Text_BattleSceneDescription,
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,
