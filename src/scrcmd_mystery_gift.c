@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "constants/heap.h"
+#include "constants/game_options.h"
 #include "constants/species.h"
 #include "generated/items.h"
 #include "generated/mystery_gift_delivery_stages.h"
@@ -37,7 +38,6 @@
 #include "unk_02054884.h"
 #include "unk_02092494.h"
 #include "vars_flags.h"
-#include "options_menu.h"
 
 #include "res/text/bank/mystery_gift_deliveryman.h"
 
