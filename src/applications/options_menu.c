@@ -923,6 +923,7 @@ static BOOL IsTextPrinterDone(const OptionsMenuData *menuData)
 static void ProcessMainInput(OptionsMenuData *menuData)
 {
     OptionsMenuEntry *entry = &menuData->entries.asArray[menuData->cursor];
+    u8 oldEntryListOffset;
 
     if (menuData->cursor != ENTRY_CLOSE) {
         if (JOY_NEW(PAD_KEY_RIGHT)) {
@@ -937,6 +938,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
     }
 
     if (JOY_NEW(PAD_KEY_UP)) {
+        oldEntryListOffset = menuData->entryListOffset;
         menuData->cursor = (menuData->cursor + MAX_ENTRIES - 1) % MAX_ENTRIES;
         if (menuData->cursor == MAX_ENTRIES - 1) {
             menuData->entryListOffset = MAX_ENTRIES - VISIBLE_ENTRY_COUNT;
@@ -949,10 +951,13 @@ static void ProcessMainInput(OptionsMenuData *menuData)
             BG_OFFSET_UPDATE_SET_Y,
             -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
 
-        PrintVisibleEntries(menuData);
+        if (menuData->entryListOffset != oldEntryListOffset) {
+            PrintVisibleEntries(menuData);
+        }
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     } else if (JOY_NEW(PAD_KEY_DOWN)) {
+        oldEntryListOffset = menuData->entryListOffset;
         menuData->cursor = (menuData->cursor + 1) % MAX_ENTRIES;
         if (menuData->cursor == 0) {
             menuData->entryListOffset = 0;
@@ -965,7 +970,9 @@ static void ProcessMainInput(OptionsMenuData *menuData)
             BG_OFFSET_UPDATE_SET_Y,
             -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
 
-        PrintVisibleEntries(menuData);
+        if (menuData->entryListOffset != oldEntryListOffset) {
+            PrintVisibleEntries(menuData);
+        }
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     }

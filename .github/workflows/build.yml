@@ -33,14 +33,18 @@ jobs:
       - name: Configure Repo
         run: make configure
 
-      - name: Compile Rom
+      - name: Compile ROM
         run: make rom
 
-      # Upload the built ROM as a GitHub Actions artifact
+      - name: Find built ROM
+        run: |
+          find "$BUILD" -type f -name '*.nds' -print
+          find "${{ github.workspace }}" -type f -name '*.nds' -print
+
       - name: Upload ROM
         uses: actions/upload-artifact@v7
         with:
           name: pokeplatinum-rom
-          path: build/pokeplatinum.us.nds
+          path: /var/tmp/pokeplatinum/**/*.nds
           if-no-files-found: error
           retention-days: 90
