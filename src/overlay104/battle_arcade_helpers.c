@@ -253,7 +253,7 @@ BOOL BattleArcade_IsMultiPlayerChallenge(u8 challengeType)
 
 static void AddSummaryDetailsToMon(BattleArcade *battleArcade, Pokemon *mon)
 {
-    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(battleArcade->saveData), ITEM_POKE_BALL, 0, 0, HEAP_ID_FIELD2);
+    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(battleArcade->saveData), ITEM_POKE_BALL, 0, 0, Options_EvIvMode(SaveData_GetOptions(battleArcade->saveData)), HEAP_ID_FIELD2);
 }
 
 void BattleArcade_AddMonToParty(BattleArcade *battleArcade, Party *party, Pokemon *mon)

@@ -265,7 +265,7 @@ void BattleCastle_RevivePokemon(Party *party)
 
 static void AddSummaryDetailsToMon(BattleCastle *battleCastle, Pokemon *mon)
 {
-    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(battleCastle->saveData), ITEM_POKE_BALL, 0, 0, HEAP_ID_FIELD2);
+    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(battleCastle->saveData), ITEM_POKE_BALL, 0, 0, Options_EvIvMode(SaveData_GetOptions(battleCastle->saveData)), HEAP_ID_FIELD2);
 }
 
 void BattleCastle_AddMonToParty(BattleCastle *battleCastle, Party *party, Pokemon *mon)

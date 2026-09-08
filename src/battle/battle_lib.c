@@ -6248,7 +6248,7 @@ void BattleSystem_SetPokemonCatchData(BattleSystem *battleSys, BattleContext *ba
         ball = battleCtx->msgItemTemp;
     }
 
-    Pokemon_SetCatchData(mon, trInfo, ball, mapHeader, terrain, HEAP_ID_BATTLE);
+    Pokemon_SetCatchData(mon, trInfo, ball, mapHeader, terrain, Options_EvIvMode(BattleSystem_GetOptions(battleSys)), HEAP_ID_BATTLE);
 }
 
 u8 BattleContext_IOBufferVal(BattleContext *battleCtx, int battler)

@@ -37,6 +37,7 @@
 #include "unk_02054884.h"
 #include "unk_02092494.h"
 #include "vars_flags.h"
+#include "options_menu.h"
 
 #include "res/text/bank/mystery_gift_deliveryman.h"
 
@@ -180,6 +181,7 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
     TrainerInfo *trainerInfo = SaveData_GetTrainerInfo(fieldSystem->saveData);
     VarsFlags *varsFlags = SaveData_GetVarsFlags(fieldSystem->saveData);
     Pokemon *tmpPoke = NULL;
+    Options* options = SaveData_GetOptions(fieldSystem->saveData);
 
     Pokemon *mon = &giftData->pokemonGiftData.pokemon;
     u8 *giftSpecialRibbons = giftData->pokemonGiftData.specialRibbonsDescIDs;
@@ -297,22 +299,24 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
         }
     }
 
-    u8 maxIv = 31;
-    u16 maxEv = 252;
+    if (Options_EvIvMode(options) == OPTIONS_EV_IV_MODE_MAX) {
+        u8 maxIv = 31;
+        u16 maxEv = 252;
 
-    Pokemon_SetValue(mon, MON_DATA_HP_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_ATK_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_DEF_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPEED_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPATK_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPDEF_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_HP_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_ATK_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_DEF_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPEED_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPATK_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPDEF_IV, &maxIv);
 
-    Pokemon_SetValue(mon, MON_DATA_HP_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_ATK_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_DEF_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_HP_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_ATK_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_DEF_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
+    }
 
     Pokemon_CalcLevelAndStats(mon);
 

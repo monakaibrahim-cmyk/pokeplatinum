@@ -18,6 +18,7 @@
 #include "savedata.h"
 #include "trainer_info.h"
 #include "unk_02017038.h"
+#include "game_options.h"
 
 BOOL Pokemon_CanBattle(Pokemon *mon)
 {
@@ -36,35 +37,38 @@ BOOL Pokemon_GiveMonFromScript(enum HeapID heapID, SaveData *saveData, u16 speci
     u32 item;
     Party *party;
     TrainerInfo *trainerInfo = SaveData_GetTrainerInfo(saveData);
+    Options* options = SaveData_GetOptions(saveData);
 
     party = SaveData_GetParty(saveData);
     mon = Pokemon_New(heapID);
 
     Pokemon_Init(mon);
     Pokemon_InitWith(mon, species, level, INIT_IVS_RANDOM, FALSE, 0, OTID_NOT_SET, 0);
-    Pokemon_SetCatchData(mon, trainerInfo, ITEM_POKE_BALL, metLocation, metTerrain, heapID);
+    Pokemon_SetCatchData(mon, trainerInfo, ITEM_POKE_BALL, metLocation, metTerrain, Options_EvIvMode(SaveData_GetOptions(saveData)), heapID);
 
     item = heldItem;
     Pokemon_SetValue(mon, MON_DATA_HELD_ITEM, &item);
 
-    u8 maxIv = 31;
-    u16 maxEv = 252;
+    if (Options_EvIvMode(options) == OPTIONS_EV_IV_MODE_MAX) {
+        u8 maxIv = 31;
+        u16 maxEv = 252;
 
-    Pokemon_SetValue(mon, MON_DATA_HP_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_ATK_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_DEF_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPEED_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPATK_IV, &maxIv);
-    Pokemon_SetValue(mon, MON_DATA_SPDEF_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_HP_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_ATK_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_DEF_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPEED_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPATK_IV, &maxIv);
+        Pokemon_SetValue(mon, MON_DATA_SPDEF_IV, &maxIv);
 
-    Pokemon_SetValue(mon, MON_DATA_HP_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_ATK_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_DEF_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
-    Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_HP_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_ATK_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_DEF_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
+        Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
 
-    Pokemon_CalcLevelAndStats(mon);
+        Pokemon_CalcLevelAndStats(mon);
+    }
     
     result = Party_AddPokemon(party, mon);
 

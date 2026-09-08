@@ -5,6 +5,7 @@
 
 #include "constants/flavor.h"
 #include "constants/forms.h"
+#include "constants/game_options.h"
 #include "constants/pokemon.h"
 #include "constants/sound.h"
 #include "generated/trainer_classes.h"
@@ -829,8 +830,8 @@ void PlayCryWithParams(ChatotCry *chatotCry, enum PokemonCryMod cryMod, u16 spec
  */
 void Species_PlayDelayedCry(ChatotCry *chatotCry, enum PokemonCryMod cryMod, u16 species, int form, int pan, int volume, int forceDefaultChatot, enum HeapID heapID, u8 delay);
 BOOL Pokemon_PlayCry(Pokemon *mon);
-void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokeball, int metLocation, int metTerrain, enum HeapID heapID);
-void Pokemon_UpdateAfterCatch(Pokemon *mon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, int heapID);
+void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, enum HeapID heapID);
+void Pokemon_UpdateAfterCatch(Pokemon *mon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, int heapID);
 void Pokemon_GiveHeldItem(Pokemon *mon, u32 battleType, int itemRates);
 BOOL Pokemon_CanLearnTM(Pokemon *mon, u8 tmID);
 BOOL CanPokemonFormLearnTM(u16 monSpecies, int monForm, u8 tmID);

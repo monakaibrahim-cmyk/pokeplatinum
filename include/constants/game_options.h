@@ -12,6 +12,11 @@ enum GuageUpdate {
     OPTIONS_GAUGE_INSTANT
 };
 
+enum OptionsEvIvMode {
+    OPTIONS_EV_IV_MODE_NORMAL = 0,
+    OPTIONS_EV_IV_MODE_MAX
+};
+
 enum OptionsSoundMode {
     OPTIONS_SOUND_MODE_STEREO = 0,
     OPTIONS_SOUND_MODE_MONO

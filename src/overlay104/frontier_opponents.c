@@ -328,7 +328,7 @@ static void SetRentalPokemonSummaryInfo(SaveData *saveData, Pokemon *mon)
     TrainerInfo *playerInfo = SaveData_GetTrainerInfo(saveData);
 
     u32 otID = Pokemon_GetValue(mon, MON_DATA_OT_ID, NULL);
-    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(saveData), ITEM_POKE_BALL, 0, 0, HEAP_ID_FIELD2);
+    Pokemon_UpdateAfterCatch(mon, SaveData_GetTrainerInfo(saveData), ITEM_POKE_BALL, 0, 0, Options_EvIvMode(SaveData_GetOptions(saveData)), HEAP_ID_FIELD2);
 
     int metLocation = MapHeader_GetMapLabelTextID(MAP_HEADER_BATTLE_FACTORY);
     UpdateMonStatusAndTrainerInfo(mon, playerInfo, 0, metLocation, HEAP_ID_FIELD2);

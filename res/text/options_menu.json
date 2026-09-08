@@ -243,6 +243,26 @@
         "Choose between Normal Gauge Update or\n",
         "Instant Gauge Update."
       ]
+    },
+    {
+      "id": "OptionsMenu_Text_EvIvModeLabel",
+      "en_US": "EV/IV"
+    },
+    {
+      "id": "OptionsMenu_Text_EvIvModeNormal",
+      "en_US": "NORMAL"
+    },
+    {
+      "id": "OptionsMenu_Text_EvIvModeMax",
+      "en_US": "MAX"
+    },
+    {
+      "id": "OptionsMenu_Text_EvIvModeDescription",
+      "en_US": [
+        "Choose between Normal or Max EV/IV.\n",
+        "Pokémon Obtained through Catches/Events\n",
+        "will have either normal or maxed Evs/Ivs."
+      ]
     }
   ]
 }

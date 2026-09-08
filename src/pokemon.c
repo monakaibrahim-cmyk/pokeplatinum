@@ -6,6 +6,7 @@
 #include "constants/charcode.h"
 #include "constants/flavor.h"
 #include "constants/forms.h"
+#include "constants/game_options.h"
 #include "constants/heap.h"
 #include "constants/items.h"
 #include "constants/moves.h"
@@ -52,6 +53,7 @@
 #include "trainer_info.h"
 #include "unk_02017038.h"
 #include "unk_02092494.h"
+#include "save_player.h"
 
 #include "res/pokemon/regional_pokedex_size.h"
 #include "res/trainers/classes/trbgra.naix"
@@ -275,7 +277,7 @@ static BOOL Pokemon_HasMove(Pokemon *mon, u16 moveID);
 static s8 BoxPokemon_GetFlavorAffinity(BoxPokemon *boxMon, enum Flavor flavor);
 static BOOL IsBoxPokemonInfectedWithPokerus(BoxPokemon *boxMon);
 static BOOL BoxPokemonHasCuredPokerus(BoxPokemon *boxMon);
-static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum HeapID heapID);
+static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, enum HeapID heapID);
 static void PostCaptureBoxPokemonProcessing(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, int heapID);
 static BOOL CanBoxPokemonLearnTM(BoxPokemon *boxMon, u8 tmID);
 static void BoxPokemon_CalcAbility(BoxPokemon *boxMon);
@@ -4636,9 +4638,9 @@ BOOL Pokemon_PlayCry(Pokemon *mon)
     return Sound_PlayPokemonCry(species, form);
 }
 
-void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokeball, int metLocation, int metTerrain, enum HeapID heapID)
+void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, enum HeapID heapID)
 {
-    InitializeBoxPokemonAfterCapture(&mon->box, trainerInfo, monPokeball, metLocation, metTerrain, heapID);
+    InitializeBoxPokemonAfterCapture(&mon->box, trainerInfo, monPokeball, metLocation, metTerrain, evIvMode, heapID);
 
     if (monPokeball == ITEM_HEAL_BALL) {
         int monMaxHP = Pokemon_GetValue(mon, MON_DATA_MAX_HP, NULL);
@@ -4649,40 +4651,42 @@ void Pokemon_SetCatchData(Pokemon *mon, TrainerInfo *trainerInfo, int monPokebal
     }
 }
 
-static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum HeapID heapID)
+static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, enum HeapID heapID)
 {
-    u8 maxIv = 31;
-    u16 maxEv = 252;
-    
     UpdateBoxMonStatusAndTrainerInfo(boxMon, trainer, 0, metLocation, heapID);
     BoxPokemon_SetValue(boxMon, MON_DATA_MET_GAME, &gGameVersion);
     BoxPokemon_SetValue(boxMon, MON_DATA_POKEBALL, &monPokeball);
 
-    BoxPokemon_SetValue(boxMon, MON_DATA_HP_IV, &maxIv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_ATK_IV, &maxIv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_DEF_IV, &maxIv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_IV, &maxIv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_IV, &maxIv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_IV, &maxIv);
+    if (evIvMode == OPTIONS_EV_IV_MODE_MAX) {
+        u8 maxIv = 31;
+        u16 maxEv = 252;
 
-    BoxPokemon_SetValue(boxMon, MON_DATA_HP_EV, &maxEv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_ATK_EV, &maxEv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_DEF_EV, &maxEv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_EV, &maxEv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_EV, &maxEv);
-    BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_HP_IV, &maxIv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_ATK_IV, &maxIv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_DEF_IV, &maxIv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_IV, &maxIv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_IV, &maxIv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_IV, &maxIv);
+
+        BoxPokemon_SetValue(boxMon, MON_DATA_HP_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_ATK_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_DEF_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_EV, &maxEv);
+        BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_EV, &maxEv);
+    }
 
     BoxPokemon_SetValue(boxMon, MON_DATA_MET_TERRAIN, &metTerrain);
 }
 
-void Pokemon_UpdateAfterCatch(Pokemon *mon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, int heapID)
+void Pokemon_UpdateAfterCatch(Pokemon *mon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, int heapID)
 {
-    PostCaptureBoxPokemonProcessing(&mon->box, trainer, monPokeball, metLocation, metTerrain, heapID);
+    PostCaptureBoxPokemonProcessing(&mon->box, trainer, monPokeball, metLocation, metTerrain, evIvMode, heapID);
 }
 
-static void PostCaptureBoxPokemonProcessing(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, int heapID)
+static void PostCaptureBoxPokemonProcessing(BoxPokemon *boxMon, TrainerInfo *trainer, int monPokeball, int metLocation, int metTerrain, enum OptionsEvIvMode evIvMode, int heapID)
 {
-    InitializeBoxPokemonAfterCapture(boxMon, trainer, monPokeball, metLocation, metTerrain, heapID);
+    InitializeBoxPokemonAfterCapture(boxMon, trainer, monPokeball, metLocation, metTerrain, evIvMode, heapID);
 }
 
 static const u16 sHeldItemChance[][2] = {
