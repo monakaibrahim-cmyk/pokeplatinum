@@ -34,7 +34,7 @@ void Options_Init(Options *options)
     options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
     options->frameRate = OPTIONS_FRAMERATE_CAPPED;
     options->disobedient = OPTIONS_DISOBEDIENT_ON;
-    // options->easyCatch = OPTIONS_EASYCATCH_OFF;
+    options->easyCatch = OPTIONS_EASYCATCH_OFF;
 
     options->battleStyle = OPTIONS_BATTLE_STYLE_SHIFT;
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
@@ -126,15 +126,15 @@ void Options_SetDisobedient(Options *options, enum OptionsDisobedient mode)
     options->disobedient = mode;
 }
 
-// int Options_EasyCatch(const Options *options)
-// {
-//     return options->easyCatch;
-// }
+int Options_EasyCatch(const Options *options)
+{
+    return options->easyCatch;
+}
 
-// void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
-// {
-//     options->easyCatch = mode;
-// }
+void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
+{
+    options->easyCatch = mode;
+}
 
 ////////////////////////////////////////////////////////
 

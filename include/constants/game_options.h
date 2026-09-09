@@ -28,10 +28,10 @@ enum OptionsDisobedient {
     OPTIONS_DISOBEDIENT_OFF,
 };
 
-// enum OptionsEasyCatchMode {
-//     OPTIONS_EASYCATCH_OFF = 0,
-//     OPTIONS_EASYCATCH_ON
-// };
+enum OptionsEasyCatchMode {
+    OPTIONS_EASYCATCH_OFF = 0,
+    OPTIONS_EASYCATCH_ON
+};
 
 /////////////////////////////////////////////////
 
