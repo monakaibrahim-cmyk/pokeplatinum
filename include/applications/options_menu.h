@@ -11,6 +11,7 @@ typedef struct OptionsMenu {
     u16 frameRate : 2;
     u16 disobedient : 2;
     u16 easyCatch : 2;
+    u16 shinyRate : 4;
     u16 battleScene : 1;
     u16 battleStyle : 1;
     u16 buttonMode : 2;

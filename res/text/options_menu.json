@@ -260,7 +260,7 @@
       "id": "OptionsMenu_Text_EvIvModeDescription",
       "en_US": [
         "Choose between Normal or Max EV/IV.\n",
-        "PCatches/Events will have maxed Stats"
+        "Catches/Events will have maxed Stats"
       ]
     },
     {
@@ -319,6 +319,26 @@
         "Turn all Pokeball Catch Rate\n",
         "into Master Ball."
       ]
+    },
+    {
+      "id": "OptionsMenu_Text_ShinyRateLabel",
+      "en_US": "SHINY RATE"
+    },
+    {
+      "id": "OptionsMenu_Text_ShinyRateNormal",
+      "en_US": "NORMAL"
+    },
+    {
+      "id": "OptionsMenu_Text_ShinyRateMid",
+      "en_US": "MID"
+    },
+    {
+      "id": "OptionsMenu_Text_ShinyRateHigh",
+      "en_US": "HIGH"
+    },
+    {
+      "id": "OptionsMenu_Text_ShinyRateDescription",
+      "en_US": "Choose Shiny Rate."
     }
   ]
 }

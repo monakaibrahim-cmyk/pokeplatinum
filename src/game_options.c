@@ -35,6 +35,7 @@ void Options_Init(Options *options)
     options->frameRate = OPTIONS_FRAMERATE_CAPPED;
     options->disobedient = OPTIONS_DISOBEDIENT_ON;
     options->easyCatch = OPTIONS_EASYCATCH_OFF;
+    options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
 
     options->battleStyle = OPTIONS_BATTLE_STYLE_SHIFT;
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
@@ -134,6 +135,16 @@ int Options_EasyCatch(const Options *options)
 void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
 {
     options->easyCatch = mode;
+}
+
+int Options_ShinyRate(const Options *options)
+{
+    return options->shinyRate;
+}
+
+void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate)
+{
+    options->shinyRate = rate;
 }
 
 ////////////////////////////////////////////////////////

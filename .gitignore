@@ -90,6 +90,7 @@ diff.txt
 .vs/
 .vscode/*
 !.vscode/launch.json
+.agent/
 
 temp_asm/
 asm_old/

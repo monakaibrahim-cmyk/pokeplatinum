@@ -11,6 +11,8 @@
 #include "overlay005/daycare.h"
 
 #include "heap.h"
+#include "inlines.h"
+#include "math_util.h"
 #include "party.h"
 #include "pokemon.h"
 #include "save_catchrecords.h"
@@ -19,6 +21,8 @@
 #include "trainer_info.h"
 #include "unk_02017038.h"
 #include "game_options.h"
+
+#include "debug.h"
 
 BOOL Pokemon_CanBattle(Pokemon *mon)
 {
@@ -43,13 +47,51 @@ BOOL Pokemon_GiveMonFromScript(enum HeapID heapID, SaveData *saveData, u16 speci
     mon = Pokemon_New(heapID);
 
     Pokemon_Init(mon);
+
+    // Shiny Modification
+    BOOL isShiny = FALSE;
+    int rate = 0;
+
+    switch (Options_ShinyRate(options)) {
+    case OPTIONS_SHINYRATE_MID:
+        rate = 32;
+        break;
+    case OPTIONS_SHINYRATE_HIGH:
+        rate = 1;
+        break;
+    }
+
+    if (rate > 0 && LCRNG_RandMod(rate) == 0) {
+        isShiny = TRUE;
+    }
+
+    u32 playerID = TrainerInfo_ID(trainerInfo);
+
+    if (isShiny) {
+        u32 seed = LCRNG_GetSeed();
+        u32 targetSeed;
+        u16 pidLow, pidHigh;
+
+        do {
+            targetSeed = seed;
+            seed = seed * LCRNG_MULTIPLIER + LCRNG_INCREMENT;
+            pidLow = seed >> 16;
+            seed = seed * LCRNG_MULTIPLIER + LCRNG_INCREMENT;
+            pidHigh = seed >> 16;
+        } while ((((playerID & 0xFFFF0000) >> 16) ^ (playerID & 0xFFFF) ^ pidHigh ^ pidLow) >= 8);
+
+        LCRNG_SetSeed(targetSeed);
+    }
+    
     Pokemon_InitWith(mon, species, level, INIT_IVS_RANDOM, FALSE, 0, OTID_NOT_SET, 0);
     Pokemon_SetCatchData(mon, trainerInfo, ITEM_POKE_BALL, metLocation, metTerrain, Options_EvIvMode(SaveData_GetOptions(saveData)), heapID);
-
+    
     item = heldItem;
     Pokemon_SetValue(mon, MON_DATA_HELD_ITEM, &item);
 
     if (Options_EvIvMode(options) == OPTIONS_EV_IV_MODE_MAX) {
+        EmulatorLog("Pokemon_GiveMonFromScript | Flag: OPTIONS_EV_IV_MODE_MAX");
+
         u8 maxIv = 31;
         u16 maxEv = 252;
 
@@ -68,6 +110,8 @@ BOOL Pokemon_GiveMonFromScript(enum HeapID heapID, SaveData *saveData, u16 speci
         Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
 
         Pokemon_CalcLevelAndStats(mon);
+    } else {
+        EmulatorLog("Pokemon_GiveMonFromScript | Flag: OPTIONS_EV_IV_MODE_NORMAL");
     }
     
     result = Party_AddPokemon(party, mon);

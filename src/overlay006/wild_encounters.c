@@ -2,6 +2,7 @@
 
 #include <nitro.h>
 #include <string.h>
+#include "debug.h"
 
 #include "constants/battle.h"
 #include "constants/forms.h"
@@ -1073,7 +1074,6 @@ static void CreateWildMon(u16 species, u8 level, const int partyDest, const Wild
 
         sub_02074088(newEncounter, species, level, 32, gender, GetNatureForWildMon(firstPartyMon, encounterFieldParams), 0);
         Pokemon_SetValue(newEncounter, MON_DATA_OT_ID, &encounterFieldParams->trainerID);
-
         GF_ASSERT(AddWildMonToParty(partyDest, encounterFieldParams, newEncounter, battleParams));
         Heap_Free(newEncounter);
         return;
@@ -1081,7 +1081,6 @@ static void CreateWildMon(u16 species, u8 level, const int partyDest, const Wild
 
     sub_02074044(newEncounter, species, level, 32, GetNatureForWildMon(firstPartyMon, encounterFieldParams));
     Pokemon_SetValue(newEncounter, MON_DATA_OT_ID, &encounterFieldParams->trainerID);
-
     GF_ASSERT(AddWildMonToParty(partyDest, encounterFieldParams, newEncounter, battleParams));
     Heap_Free(newEncounter);
 }
@@ -1091,6 +1090,7 @@ static BOOL TryGenerateWildMon(Pokemon *firstPartyMon, const int fishingRodType,
     BOOL forcedSlot;
     u8 encounterSlot = 0;
     u8 level = 0;
+    BOOL isShiny;
 
     switch (encounterType) {
     case ENCOUNTER_TYPE_GRASS:
@@ -1141,7 +1141,38 @@ static BOOL TryGenerateWildMon(Pokemon *firstPartyMon, const int fishingRodType,
         return FALSE;
     }
 
-    CreateWildMon(encounterTable[encounterSlot].species, level, partyDest, encounterFieldParams, firstPartyMon, battleParams);
+    // Shiny Modification
+    
+    isShiny = FALSE;
+
+    const Options *options = SaveData_GetOptions(SaveData_Ptr());
+    int rate = 0;
+
+    switch (Options_ShinyRate(options)) {
+    case OPTIONS_SHINYRATE_NORMAL:
+        rate = 0;
+        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_NORMAL");
+        break;
+    case OPTIONS_SHINYRATE_MID:
+        rate = 32;
+        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_MID");
+        break;
+    case OPTIONS_SHINYRATE_HIGH:
+        rate = 1;
+        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_HIGH");
+        break;
+    }
+
+    if (rate > 0 && LCRNG_RandMod(rate) == 0) {
+        isShiny = TRUE;
+    }
+
+    if (isShiny) {
+        CreateWildMonShinyWithGenderOrNature(encounterTable[encounterSlot].species, level, partyDest, encounterFieldParams->trainerID, encounterFieldParams, firstPartyMon, battleParams);
+    } else {
+        CreateWildMon(encounterTable[encounterSlot].species, level, partyDest, encounterFieldParams, firstPartyMon, battleParams);
+    }
+
     return TRUE;
 }
 
@@ -1219,7 +1250,29 @@ void CreateWildMon_HoneyTree(FieldSystem *fieldSystem, FieldBattleDTO *battlePar
 
     HoneyTree_Unslather(fieldSystem);
     battleParams->battleStatusMask |= BATTLE_STATUS_HONEY_TREE;
-    CreateWildMon(species, level, 1, &encounterFieldParams, firstPartyMon, battleParams);
+
+    BOOL isShiny = FALSE;
+    const Options *options = SaveData_GetOptions(SaveData_Ptr());
+    int rate = 0;
+
+    switch (Options_ShinyRate(options)) {
+    case OPTIONS_SHINYRATE_MID:
+        rate = 32;
+        break;
+    case OPTIONS_SHINYRATE_HIGH:
+        rate = 1;
+        break;
+    }
+
+    if (rate > 0 && LCRNG_RandMod(rate) == 0) {
+        isShiny = TRUE;
+    }
+
+    if (isShiny) {
+        CreateWildMonShinyWithGenderOrNature(species, level, 1, encounterFieldParams.trainerID, &encounterFieldParams, firstPartyMon, battleParams);
+    } else {
+        CreateWildMon(species, level, 1, &encounterFieldParams, firstPartyMon, battleParams);
+    }
 
     return;
 }
@@ -1232,7 +1285,31 @@ void CreateWildMon_Scripted(FieldSystem *fieldSystem, u16 species, u8 level, Fie
     WildEncounters_FieldParams encounterFieldParams;
     InitEncounterFieldParams(fieldSystem, firstPartyMon, NULL, &encounterFieldParams);
 
-    CreateWildMon(species, level, 1, &encounterFieldParams, firstPartyMon, battleParams);
+    // CreateWildMon(species, level, 1, &encounterFieldParams, firstPartyMon, battleParams);
+
+    BOOL isShiny = FALSE;
+    const Options *options = SaveData_GetOptions(SaveData_Ptr());
+    int rate = 0;
+
+    switch (Options_ShinyRate(options)) {
+    case OPTIONS_SHINYRATE_MID:
+        rate = 32;
+        break;
+    case OPTIONS_SHINYRATE_HIGH:
+        rate = 1;
+        break;
+    }
+
+    if (rate > 0 && LCRNG_RandMod(rate) == 0) {
+        isShiny = TRUE;
+    }
+
+    if (isShiny) {
+        CreateWildMonShinyWithGenderOrNature(species, level, 1, encounterFieldParams.trainerID, &encounterFieldParams, firstPartyMon, battleParams);
+    } else {
+        CreateWildMon(species, level, 1, &encounterFieldParams, firstPartyMon, battleParams);
+    }
+
     return;
 }
 

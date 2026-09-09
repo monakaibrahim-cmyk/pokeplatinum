@@ -64,7 +64,8 @@ enum OptionsMenuEntryID {
     ENTRY_EV_IV_MODE,
     ENTRY_FRAMERATE,
     ENTRY_DISOBEDIENT,
-    // ENTRY_EASYCATCH,
+    ENTRY_EASYCATCH,
+    ENTRY_SHINYRATE,
     ENTRY_BATTLE_SCENE,
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
@@ -86,7 +87,7 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 6; // Todo: update to 7
+    u32 cursor : 8;
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
@@ -116,7 +117,8 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry evIvMode;
             OptionsMenuEntry frameRate;
             OptionsMenuEntry disobedient;
-            // OptionsMenuEntry easyCatch;
+            OptionsMenuEntry easyCatch;
+            OptionsMenuEntry shinyRate;
             OptionsMenuEntry battleScene;
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
@@ -176,7 +178,8 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     menuData->options.evIvMode = Options_EvIvMode(options);
     menuData->options.frameRate = Options_FrameRate(options);
     menuData->options.disobedient = Options_Disobedient(options);
-    // menuData->options.easyCatch = Options_EasyCatch(options);
+    menuData->options.easyCatch = Options_EasyCatch(options);
+    menuData->options.shinyRate = Options_ShinyRate(options);
 
     menuData->options.battleScene = Options_BattleScene(options);
     menuData->options.battleStyle = Options_BattleStyle(options);
@@ -203,7 +206,8 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
         menuData->options.evIvMode = menuData->entries.evIvMode.selected;
         menuData->options.frameRate = menuData->entries.frameRate.selected;
         menuData->options.disobedient = menuData->entries.disobedient.selected;
-        // menuData->options.easyCatch = menuData->entries.easyCatch.selected;
+        menuData->options.easyCatch = menuData->entries.easyCatch.selected;
+        menuData->options.shinyRate = menuData->entries.shinyRate.selected;
 
         menuData->options.battleScene = menuData->entries.battleScene.selected;
         menuData->options.battleStyle = menuData->entries.battleStyle.selected;
@@ -219,7 +223,8 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     Options_SetEvIvMode(menuData->saveOptions, menuData->options.evIvMode);
     Options_SetFrameRate(menuData->saveOptions, menuData->options.frameRate);
     Options_SetDisobedient(menuData->saveOptions, menuData->options.disobedient);
-    // Options_SetEasyCatch(menuData->saveOptions, menuData->options.easyCatch);
+    Options_SetEasyCatch(menuData->saveOptions, menuData->options.easyCatch);
+    Options_SetShinyRate(menuData->saveOptions, menuData->options.shinyRate);
 
     Options_SetBattleScene(menuData->saveOptions, menuData->options.battleScene);
     Options_SetBattleStyle(menuData->saveOptions, menuData->options.battleStyle);
@@ -720,7 +725,8 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeLabel,
     OptionsMenu_Text_FrameRateLabel,
     OptionsMenu_Text_DisobedientLabel,
-    // OptionsMenu_Text_EasyCatchLabel,
+    OptionsMenu_Text_EasyCatchLabel,
+    OptionsMenu_Text_ShinyRateLabel,
     OptionsMenu_Text_BattleSceneLabel,
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
@@ -792,12 +798,13 @@ static void PrintTitleAndEntries(OptionsMenuData *menuData)
 
 static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     3,
-    // 2,
     2,
     2,
     2,
     2,
     2,
+    2,
+    3,
     2,
     2,
     3,
@@ -812,7 +819,8 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeNormal,
     OptionsMenu_Text_FrameRateCapped,
     OptionsMenu_Text_DisobedientOn,
-    // OptionsMenu_Text_EasyCatchOff,
+    OptionsMenu_Text_EasyCatchOff,
+    OptionsMenu_Text_ShinyRateNormal,
     OptionsMenu_Text_BattleSceneOn,
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
@@ -837,7 +845,8 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.evIvMode.selected = menuData->options.evIvMode;
     menuData->entries.frameRate.selected = menuData->options.frameRate;
     menuData->entries.disobedient.selected = menuData->options.disobedient;
-    // menuData->entries.easyCatch.selected = menuData->options.easyCatch;
+    menuData->entries.easyCatch.selected = menuData->options.easyCatch;
+    menuData->entries.shinyRate.selected = menuData->options.shinyRate;
 
     menuData->entries.battleScene.selected = menuData->options.battleScene;
     menuData->entries.battleStyle.selected = menuData->options.battleStyle;
@@ -848,7 +857,8 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
 
 static const s8 sEntryXOffsets[MAX_ENTRIES] = {
     0,
-    // 0,
+    0,
+    0,
     0,
     0,
     0,
@@ -1044,7 +1054,8 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.evIvMode != menuData->entries.evIvMode.selected
         || menuData->options.frameRate != menuData->entries.frameRate.selected
         || menuData->options.disobedient != menuData->entries.disobedient.selected
-        // || menuData->options.easyCatch != menuData->entries.easyCatch.selected
+        || menuData->options.easyCatch != menuData->entries.easyCatch.selected
+        || menuData->options.shinyRate != menuData->entries.shinyRate.selected
         || menuData->options.battleScene != menuData->entries.battleScene.selected
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
@@ -1083,7 +1094,8 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeDescription,
     OptionsMenu_Text_FrameRateDescription,
     OptionsMenu_Text_DisobedientDescription,
-    // OptionsMenu_Text_EasyCatchDescription,
+    OptionsMenu_Text_EasyCatchDescription,
+    OptionsMenu_Text_ShinyRateDescription,
     OptionsMenu_Text_BattleSceneDescription,
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,

@@ -78,6 +78,7 @@
 #include "unk_0201567C.h"
 #include "game_options.h"
 #include "save_player.h"
+#include "debug.h"
 
 #include "res/text/bank/battle_strings.h"
 
@@ -4908,12 +4909,13 @@ static void Task_UpdateHPGauge(SysTask *task, void *data)
     case 1:
         if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT)
         {
+            EmulatorLog("Task_UpdateHPGauge | Flag: OPTIONS_GAUGE_INSTANT");
             while(Healthbox_DrawHPBar(healthbox) != -1);
-
             healthbox->state++;
         }
         else
         {
+            EmulatorLog("Task_UpdateHPGauge | Flag: OPTIONS_GAUGE_NORMAL");
             result = Healthbox_DrawHPBar(healthbox);
 
             if (result == -1) {
@@ -4947,9 +4949,11 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
             healthbox->expSoundTimer++;
         }
         if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT) {
+            EmulatorLog("Task_UpdateExpGauge | Flag: OPTIONS_GAUGE_INSTANT");
             while(Healthbox_DrawExpBar(healthbox) != -1);
             result = -1;
         } else {
+            EmulatorLog("Task_UpdateExpGauge | Flag: OPTIONS_GAUGE_NORMAL");
             result = Healthbox_DrawExpBar(healthbox);
         }
 

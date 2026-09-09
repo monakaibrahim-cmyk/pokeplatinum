@@ -33,6 +33,12 @@ enum OptionsEasyCatchMode {
     OPTIONS_EASYCATCH_ON
 };
 
+enum OptionsShinyRate {
+    OPTIONS_SHINYRATE_NORMAL = 0,
+    OPTIONS_SHINYRATE_MID,
+    OPTIONS_SHINYRATE_HIGH
+};
+
 /////////////////////////////////////////////////
 
 enum OptionsSoundMode {

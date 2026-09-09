@@ -43,6 +43,8 @@
 #include "sound_playback.h"
 #include "trainer_info.h"
 
+#include "debug.h"
+
 #include "res/battle/scripts/sub_seq.naix"
 
 enum BattleControllerState {
@@ -2114,8 +2116,11 @@ static int BattleControllerPlayer_CheckObedience(BattleSystem *battleSys, Battle
     TrainerInfo *trInfo = BattleSystem_GetTrainerInfo(battleSys, 0);
 
     if (Options_Disobedient(BattleSystem_GetOptions(battleSys)) == OPTIONS_DISOBEDIENT_OFF) {
+        EmulatorLog("BattleControllerPlayer_CheckObedience | Flag: OPTIONS_DISOBEDIENT_OFF");
         return OBEY_CHECK_SUCCESS;
     }
+
+    EmulatorLog("BattleControllerPlayer_CheckObedience | Flag: OPTIONS_DISOBEDIENT_ON");
 
     // These separate sentinels do not match if chained into a single sentinel
     if (battleType & BATTLE_TYPE_FRONTIER_LINK) {
