@@ -1053,6 +1053,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
 
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -FIRST_ENTRY_OFFSET);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
         return;
@@ -1065,6 +1066,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
 
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -FIRST_ENTRY_OFFSET);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
         return;
