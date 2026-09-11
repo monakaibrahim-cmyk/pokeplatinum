@@ -226,12 +226,8 @@
       "en_US": "Return to the game."
     },
     {
-      "id": "OptionsMenu_Text_PageIndicator_0",
-      "en_US": "PAGE 1/2"
-    },
-    {
-      "id": "OptionsMenu_Text_PageIndicator_1",
-      "en_US": "PAGE 2/2"
+      "id": "OptionsMenu_Text_Title_1",
+      "en_US": "Quality of Life"
     },
     {
       "id": "OptionsMenu_Text_BarGaugeUpdateLabel",

@@ -734,6 +734,11 @@ static u8 PageRowIndex(u8 entry, u8 page)
     return row;
 }
 
+static const u8 sPageTitles[NUM_PAGES] = {
+    OptionsMenu_Text_Title,
+    OptionsMenu_Text_Title_1,
+};
+
 static void PrintTitleAndEntries(OptionsMenuData *menuData)
 {
     TextColor transparentBg = TEXT_COLOR(1, 2, 0);
@@ -747,16 +752,11 @@ static void PrintTitleAndEntries(OptionsMenuData *menuData)
     Window_FillTilemap(&menuData->windows.entries, PIXEL_FILL(15));
     Window_ClearTilemap(&menuData->windows.entries);
 
-    // Title
+    // Title (Page-specific title: OptionsMenu_Text_Title_0 for page 0, OptionsMenu_Text_Title_1 for page 1)
     String *string = String_Init(256, menuData->heapID);
-    MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_Title, string);
+    MessageLoader_GetString(menuData->msgLoader, sPageTitles[menuData->currentPage], string);
     Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, string, 2, 2, TEXT_SPEED_INSTANT, transparentBg, NULL);
-
-    // Page Title
-    String *pageStr = String_Init(32, menuData->heapID);
-    MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_PageIndicator_0 + menuData->currentPage, pageStr);
-    Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, pageStr, /*x=*/ (MENU_TITLE_WIDTH * 8) - 64, /*y=*/ 2, TEXT_SPEED_NO_TRANSFER, TEXT_COLOR(1, 2, 0), NULL);
-    String_Free(pageStr);
+    String_Free(string);
 
     // Only draw entries on the current page
     for (u16 i = 0; i < MAX_ENTRIES; i++) {
@@ -953,16 +953,27 @@ static void ProcessMainInput(OptionsMenuData *menuData)
 {
     OptionsMenuEntry *entry = &menuData->entries.asArray[menuData->cursor];
 
-    // ── L / R : switch page ───────────────────────────────────────────────────
-    if (JOY_NEW(PAD_BUTTON_L) && menuData->currentPage > 0) {
-        menuData->currentPage--;
+    // ── L / R : switch page (with wrap-around) ───────────────────────────────
+    if (JOY_NEW(PAD_BUTTON_L)) {
+        if (menuData->currentPage == 0) {
+            menuData->currentPage = NUM_PAGES - 1;
+        } else {
+            menuData->currentPage--;
+        }
+
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
         return;
     }
-    if (JOY_NEW(PAD_BUTTON_R) && menuData->currentPage < NUM_PAGES - 1) {
-        menuData->currentPage++;
+    
+    if (JOY_NEW(PAD_BUTTON_R)) {
+        if (menuData->currentPage >= NUM_PAGES - 1) {
+            menuData->currentPage = 0;
+        } else {
+            menuData->currentPage++;
+        }
+
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
@@ -986,6 +997,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
     u8 visibleEntries[MAX_ENTRIES];
     u8 numVisible = 0;
     u8 cursorPosInPage = 0;
+
     for (u8 i = 0; i < MAX_ENTRIES; i++) {
         if (EntryIsOnPage(i, menuData->currentPage)) {
             if (i == menuData->cursor) {
