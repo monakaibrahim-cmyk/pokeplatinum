@@ -60,20 +60,45 @@
 enum OptionsMenuEntryID {
     ENTRY_TEXT_SPEED = 0,
     ENTRY_SOUND_MODE,
-    ENTRY_GAUGE_UPDATE,
-    ENTRY_EV_IV_MODE,
-    ENTRY_FRAMERATE,
-    ENTRY_DISOBEDIENT,
-    ENTRY_EASYCATCH,
-    ENTRY_SHINYRATE,
-    ENTRY_EXPRATE,
     ENTRY_BATTLE_SCENE,
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
     ENTRY_MESSAGE_BOX_FRAME,
+
+    ENTRY_BAR_GAUGE_UPDATE,
+    ENTRY_FRAMERATE,
+
+    ENTRY_DISOBEDIENT,
+    ENTRY_EASY_CATCH,
+    ENTRY_EV_IV_MODE,
+    ENTRY_SHINY_RATE,
+    ENTRY_EXP_RATE,
+
     ENTRY_CLOSE,
 
     MAX_ENTRIES,
+};
+
+#define NUM_PAGES 3
+
+static const u8 sEntryPage[MAX_ENTRIES] = {
+    [ENTRY_TEXT_SPEED]                      = 0,
+    [ENTRY_SOUND_MODE]                      = 0,
+    [ENTRY_BATTLE_SCENE]                    = 0,
+    [ENTRY_BATTLE_STYLE]                    = 0,
+    [ENTRY_BUTTON_MODE]                     = 0,
+    [ENTRY_MESSAGE_BOX_FRAME]               = 0,
+
+    [ENTRY_BAR_GAUGE_UPDATE]                = 1,
+    [ENTRY_FRAMERATE]                       = 1,
+
+    [ENTRY_DISOBEDIENT]                     = 2,
+    [ENTRY_EASY_CATCH]                      = 2,
+    [ENTRY_EV_IV_MODE]                      = 2,
+    [ENTRY_SHINY_RATE]                      = 2,
+    [ENTRY_EXP_RATE]                        = 2,
+
+    [ENTRY_CLOSE]                           = 0xFF,
 };
 
 typedef struct OptionsMenuEntry {
@@ -88,7 +113,8 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 9;
+    u32 cursor : 4;
+    u32 currentPage : 4;
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
@@ -114,17 +140,20 @@ typedef struct OptionsMenuData {
         struct {
             OptionsMenuEntry textSpeed;
             OptionsMenuEntry soundMode;
-            OptionsMenuEntry gaugeUpdate;
-            OptionsMenuEntry evIvMode;
-            OptionsMenuEntry frameRate;
-            OptionsMenuEntry disobedient;
-            OptionsMenuEntry easyCatch;
-            OptionsMenuEntry shinyRate;
-            OptionsMenuEntry expRate;
             OptionsMenuEntry battleScene;
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
             OptionsMenuEntry messageBoxStyle;
+
+            OptionsMenuEntry barGaugeUpdate;
+            OptionsMenuEntry frameRate;
+
+            OptionsMenuEntry disobedient;
+            OptionsMenuEntry easyCatch;
+            OptionsMenuEntry evIvMode;
+            OptionsMenuEntry shinyRate;
+            OptionsMenuEntry expRate;
+
             OptionsMenuEntry close;
         };
     } entries;
@@ -145,8 +174,10 @@ static void LoadBgTiles(OptionsMenuData *menuData);
 static void SetupWindows(OptionsMenuData *menuData);
 
 static void PrintTitleAndEntries(OptionsMenuData *param0);
-static void PrintVisibleEntries(OptionsMenuData *menuData);
+static BOOL EntryIsOnPage(u8 entry, u8 page);
+static u8 PageRowIndex(u8 entry, u8 page);
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry);
+static void PrintEntryChoicesAtRow(OptionsMenuData *menuData, u16 entry, u8 row);
 static void PrintEntryDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
 static void PrintBankEntryAsDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
 static BOOL IsTextPrinterDone(const OptionsMenuData *menuData);
@@ -155,6 +186,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData);
 static BOOL ChangesWereMade(OptionsMenuData *menuData);
 static void DrawConfirmationPrompt(OptionsMenuData *menuData);
 
+static u8 FirstEntryOnPage(u8 page);
 static void ProcessMainInput(OptionsMenuData *menuData);
 static u32 ProcessConfirmationInput(OptionsMenuData *menuData);
 
@@ -175,20 +207,21 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
 
     menuData->options.textSpeed = Options_TextSpeed(options);
 
-    // Custom Modification
-    menuData->options.gaugeUpdate = Options_GaugeUpdate(options);
-    menuData->options.evIvMode = Options_EvIvMode(options);
-    menuData->options.frameRate = Options_FrameRate(options);
-    menuData->options.disobedient = Options_Disobedient(options);
-    menuData->options.easyCatch = Options_EasyCatch(options);
-    menuData->options.shinyRate = Options_ShinyRate(options);
-    menuData->options.expRate = Options_ExpRate(options);
-
     menuData->options.battleScene = Options_BattleScene(options);
     menuData->options.battleStyle = Options_BattleStyle(options);
     menuData->options.soundMode = Options_SoundMode(options);
     menuData->options.buttonMode = Options_ButtonMode(options);
     menuData->options.messageBoxStyle = Options_Frame(options);
+
+    menuData->options.barGaugeUpdate = Options_BarGaugeUpdate(options);
+    menuData->options.frameRate = Options_FrameRate(options);
+
+    menuData->options.disobedient = Options_Disobedient(options);
+    menuData->options.easyCatch = Options_EasyCatch(options);
+    menuData->options.evIvMode = Options_EvIvMode(options);
+    menuData->options.shinyRate = Options_ShinyRate(options);
+    menuData->options.expRate = Options_ExpRate(options);
+
     menuData->heapID = HEAP_ID_OPTIONS_MENU;
     menuData->saveOptions = options;
 
@@ -203,39 +236,39 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
 
     if (menuData->saveSelections == 1) {
         menuData->options.textSpeed = menuData->entries.textSpeed.selected;
-
-        // Custom Modification
-        menuData->options.gaugeUpdate = menuData->entries.gaugeUpdate.selected;
-        menuData->options.evIvMode = menuData->entries.evIvMode.selected;
-        menuData->options.frameRate = menuData->entries.frameRate.selected;
-        menuData->options.disobedient = menuData->entries.disobedient.selected;
-        menuData->options.easyCatch = menuData->entries.easyCatch.selected;
-        menuData->options.shinyRate = menuData->entries.shinyRate.selected;
-        menuData->options.expRate = menuData->entries.expRate.selected;
-
         menuData->options.battleScene = menuData->entries.battleScene.selected;
         menuData->options.battleStyle = menuData->entries.battleStyle.selected;
         menuData->options.soundMode = menuData->entries.soundMode.selected;
         menuData->options.buttonMode = menuData->entries.buttonMode.selected;
         menuData->options.messageBoxStyle = menuData->entries.messageBoxStyle.selected;
+
+        menuData->options.barGaugeUpdate = menuData->entries.barGaugeUpdate.selected;
+        menuData->options.frameRate = menuData->entries.frameRate.selected;
+        
+        menuData->options.disobedient = menuData->entries.disobedient.selected;
+        menuData->options.easyCatch = menuData->entries.easyCatch.selected;
+        menuData->options.evIvMode = menuData->entries.evIvMode.selected;
+        menuData->options.shinyRate = menuData->entries.shinyRate.selected;
+        menuData->options.expRate = menuData->entries.expRate.selected;
+
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
-
-    // Custom Modifiation
-    Options_SetGaugeUpdate(menuData->saveOptions, menuData->options.gaugeUpdate);
-    Options_SetEvIvMode(menuData->saveOptions, menuData->options.evIvMode);
-    Options_SetFrameRate(menuData->saveOptions, menuData->options.frameRate);
-    Options_SetDisobedient(menuData->saveOptions, menuData->options.disobedient);
-    Options_SetEasyCatch(menuData->saveOptions, menuData->options.easyCatch);
-    Options_SetShinyRate(menuData->saveOptions, menuData->options.shinyRate);
-    Options_SetExpRate(menuData->saveOptions, menuData->options.expRate);
-
     Options_SetBattleScene(menuData->saveOptions, menuData->options.battleScene);
     Options_SetBattleStyle(menuData->saveOptions, menuData->options.battleStyle);
     Options_SetSoundMode(menuData->saveOptions, menuData->options.soundMode);
     Options_SetButtonMode(menuData->saveOptions, menuData->options.buttonMode);
     Options_SetFrame(menuData->saveOptions, menuData->options.messageBoxStyle);
+
+    Options_SetBarGaugeUpdate(menuData->saveOptions, menuData->options.barGaugeUpdate);
+    Options_SetFrameRate(menuData->saveOptions, menuData->options.frameRate);
+
+    Options_SetDisobedient(menuData->saveOptions, menuData->options.disobedient);
+    Options_SetEasyCatch(menuData->saveOptions, menuData->options.easyCatch);
+    Options_SetEvIvMode(menuData->saveOptions, menuData->options.evIvMode);
+    Options_SetShinyRate(menuData->saveOptions, menuData->options.shinyRate);
+    Options_SetExpRate(menuData->saveOptions, menuData->options.expRate);
+
     Sound_SetPlaybackMode(menuData->options.soundMode);
     Options_SetSystemButtonMode(NULL, menuData->options.buttonMode);
 
@@ -726,113 +759,124 @@ static void TeardownWindows(OptionsMenuData *menuData)
 static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedLabel,
     OptionsMenu_Text_SoundModeLabel,
-    OptionsMenu_Text_GaugeUpdateLabel,
-    OptionsMenu_Text_EvIvModeLabel,
-    OptionsMenu_Text_FrameRateLabel,
-    OptionsMenu_Text_DisobedientLabel,
-    OptionsMenu_Text_EasyCatchLabel,
-    OptionsMenu_Text_ShinyRateLabel,
-    OptionsMenu_Text_ExpRateLabel,
     OptionsMenu_Text_BattleSceneLabel,
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
     OptionsMenu_Text_MessageBoxStyleLabel,
+
+    OptionsMenu_Text_BarGaugeUpdateLabel,
+    OptionsMenu_Text_FrameRateLabel,
+
+    OptionsMenu_Text_DisobedientLabel,
+    OptionsMenu_Text_EasyCatchLabel,
+    OptionsMenu_Text_EvIvModeLabel,
+    OptionsMenu_Text_ShinyRateLabel,
+    OptionsMenu_Text_ExpRateLabel,
+
     OptionsMenu_Text_CloseLabel,
 };
 
-static u16 EntryListOffset(const OptionsMenuData *menuData)
+static BOOL EntryIsOnPage(u8 entry, u8 page)
 {
-    return menuData->entryListOffset;
+    return sEntryPage[entry] == page || sEntryPage[entry] == 0xFF;
 }
 
-static void PrintVisibleEntries(OptionsMenuData *menuData)
+static u8 PageRowIndex(u8 entry, u8 page)
 {
-    u16 i;
-    u16 firstEntry = EntryListOffset(menuData);
-    u16 lastEntry = firstEntry + VISIBLE_ENTRY_COUNT;
-    TextColor whiteBg = TEXT_COLOR(1, 2, 15);
-    String *string = String_Init(256, menuData->heapID);
-
-    Window_FillRectWithColor(&menuData->windows.entries,
-        PIXEL_FILL(15),
-        0,
-        0,
-        ENTRIES_WIDTH * 8,
-        ENTRIES_HEIGHT * 8);
-    Window_ClearTilemap(&menuData->windows.entries);
-    Window_DrawStandardFrame(&menuData->windows.entries, TRUE, STANDARD_WINDOW_BASE_TILE, 14);
-
-    for (i = firstEntry; i < lastEntry; i++) {
-        String_Clear(string);
-        MessageLoader_GetString(menuData->msgLoader, sEntryLabels[i], string);
-        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
-            FONT_SYSTEM,
-            string,
-            4,
-            (i - firstEntry) * SINGLE_ENTRY_HEIGHT,
-            TEXT_SPEED_NO_TRANSFER,
-            whiteBg,
-            NULL);
-        PrintEntryChoices(menuData, i);
+    u8 row = 0;
+    for (u8 i = 0; i < entry; i++) {
+        if (EntryIsOnPage(i, page)) {
+            row++;
+        }
     }
-
-    Window_CopyToVRAM(&menuData->windows.entries);
-    String_Free(string);
+    return row;
 }
+
+static const u8 sPageTitles[NUM_PAGES] = {
+    OptionsMenu_Text_Title,
+    OptionsMenu_Text_Title_1,
+    OptionsMenu_Text_Title_2
+};
 
 static void PrintTitleAndEntries(OptionsMenuData *menuData)
 {
     TextColor transparentBg = TEXT_COLOR(1, 2, 0);
+    TextColor whiteBg       = TEXT_COLOR(1, 2, 15);
 
+    // Clear the title window before redrawing (fixes garbled text on page switch)
+    Window_FillTilemap(&menuData->windows.title, PIXEL_FILL(0));
+    Window_ClearTilemap(&menuData->windows.title);
+
+    // Clear the entries window before redrawing (fixes old page choices bleeding through)
+    Window_FillTilemap(&menuData->windows.entries, PIXEL_FILL(15));
+    Window_ClearTilemap(&menuData->windows.entries);
+
+    // Title (Page-specific title: OptionsMenu_Text_Title for page 0, OptionsMenu_Text_Title_1 for page 1)
     String *string = String_Init(256, menuData->heapID);
-    MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_Title, string);
-    Text_AddPrinterWithParamsAndColor(&menuData->windows.title,
-        FONT_SYSTEM,
-        string,
-        2,
-        2,
-        TEXT_SPEED_INSTANT,
-        transparentBg,
-        NULL);
+    MessageLoader_GetString(menuData->msgLoader, sPageTitles[menuData->currentPage], string);
+    Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, string, 2, 2, TEXT_SPEED_INSTANT, transparentBg, NULL);
 
-    PrintVisibleEntries(menuData);
+    // Only draw entries on the current page
+    for (u16 i = 0; i < MAX_ENTRIES; i++) {
+        if (!EntryIsOnPage(i, menuData->currentPage)) {
+            continue;
+        }
+        u8 row = PageRowIndex(i, menuData->currentPage);
 
-    PrintEntryDescription(menuData, ENTRY_TEXT_SPEED, TRUE);
+        String_Clear(string);
+        MessageLoader_GetString(menuData->msgLoader, sEntryLabels[i], string);
+        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries, FONT_SYSTEM, string, 4, SINGLE_ENTRY_HEIGHT * row, TEXT_SPEED_NO_TRANSFER, whiteBg, NULL);
+
+        PrintEntryChoicesAtRow(menuData, i, row);
+    }
+
+    // Reset Cursor to the first entry item when changing page
+    u8 cursorRow = PageRowIndex(menuData->cursor, menuData->currentPage);
+    Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorRow * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
+
+    PrintEntryDescription(menuData, menuData->cursor, TRUE);
     Window_CopyToVRAM(&menuData->windows.title);
+    Window_CopyToVRAM(&menuData->windows.entries);
     String_Free(string);
 }
 
 static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
-    3,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    2,
-    2,
-    3,
-    20,
-    0,
+    3, // TEXT_SPEED
+    2, // SOUND_MODE
+    2, // BATTLE_SCENE
+    2, // BATTLE_STYLE
+    3, // BUTTON_MODE
+    20, // MESSAGE_BOX_FRAME
+
+    2, // BAR_GAUGE_UPDATE
+    2, // FRAMERATE
+
+    2, // DISOBEDIENT
+    2, // EASY_CATCH
+    2, // EV_IV_MODE
+    3, // SHINY_RATE
+    3, // EXP_RATE
+    
+    0, // CLOSE
 };
 
 static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedSlow,
     OptionsMenu_Text_SoundModeStereo,
-    OptionsMenu_Text_GaugeUpdateNormal,
-    OptionsMenu_Text_EvIvModeNormal,
-    OptionsMenu_Text_FrameRateCapped,
-    OptionsMenu_Text_DisobedientOn,
-    OptionsMenu_Text_EasyCatchOff,
-    OptionsMenu_Text_ShinyRateNormal,
-    OptionsMenu_Text_ExpRateNormal,
     OptionsMenu_Text_BattleSceneOn,
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
     OptionsMenu_Text_MessageBoxStyle_01,
+
+    OptionsMenu_Text_BarGaugeUpdateNormal,
+    OptionsMenu_Text_FrameRateCapped,
+    
+    OptionsMenu_Text_DisobedientOn,
+    OptionsMenu_Text_EasyCatchOff,
+    OptionsMenu_Text_EvIvModeNormal,
+    OptionsMenu_Text_ShinyRateNormal,
+    OptionsMenu_Text_ExpRateNormal,
+
     NULL,
 };
 
@@ -847,61 +891,64 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     }
 
     menuData->entries.textSpeed.selected = menuData->options.textSpeed;
-
-    // Custom Modification
-    menuData->entries.gaugeUpdate.selected = menuData->options.gaugeUpdate;
-    menuData->entries.evIvMode.selected = menuData->options.evIvMode;
-    menuData->entries.frameRate.selected = menuData->options.frameRate;
-    menuData->entries.disobedient.selected = menuData->options.disobedient;
-    menuData->entries.easyCatch.selected = menuData->options.easyCatch;
-    menuData->entries.shinyRate.selected = menuData->options.shinyRate;
-    menuData->entries.expRate.selected = menuData->options.expRate;
-
     menuData->entries.battleScene.selected = menuData->options.battleScene;
     menuData->entries.battleStyle.selected = menuData->options.battleStyle;
     menuData->entries.soundMode.selected = menuData->options.soundMode;
     menuData->entries.buttonMode.selected = menuData->options.buttonMode;
     menuData->entries.messageBoxStyle.selected = menuData->options.messageBoxStyle;
+
+    menuData->entries.barGaugeUpdate.selected = menuData->options.barGaugeUpdate;
+    menuData->entries.frameRate.selected = menuData->options.frameRate;
+
+    menuData->entries.disobedient.selected = menuData->options.disobedient;
+    menuData->entries.easyCatch.selected = menuData->options.easyCatch;
+    menuData->entries.evIvMode.selected = menuData->options.evIvMode;
+    menuData->entries.shinyRate.selected = menuData->options.shinyRate;
+    menuData->entries.expRate.selected = menuData->options.expRate;
 }
 
 static const s8 sEntryXOffsets[MAX_ENTRIES] = {
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+    0, // TEXT_SPEED
+    0, // SOUND_MODE
+    0, // BATTLE_SCENE
+    0, // BATTLE_STYLE
+    0, // BUTTON_MODE
+    0, // MESSAGE_BOX_FRAME
+
+    0, // BAR_GAUGE_UPDATE
+    0, // FRAMERATE
+
+    0, // DISOBEDIENT
+    0, // EASY_CATCH
+    0, // EV_IV_MODE
+    0, // SHINY_RATE
+    0, // EXP_RATE
+    
+    0, // CLOSE
 };
 
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
 {
-    TextColor darkGray, red, color;
-    u16 i;
-    u16 displayEntry = entry - EntryListOffset(menuData);
-    u8 textSpeed;
-    s8 xOffset = 0;
+    PrintEntryChoicesAtRow(menuData, entry, PageRowIndex(entry, menuData->currentPage));
+}
 
-    darkGray = TEXT_COLOR(1, 2, 15);
-    red = TEXT_COLOR(3, 4, 15);
+static void PrintEntryChoicesAtRow(OptionsMenuData *menuData, u16 entry, u8 row)
+{
+    TextColor darkGray = TEXT_COLOR(1, 2, 15);
+    TextColor red      = TEXT_COLOR(3, 4, 15);
+    u16 yPixel = row * SINGLE_ENTRY_HEIGHT;
 
-    Window_FillRectWithColor(&menuData->windows.entries, PIXEL_FILL(15), CHOICES_X + sEntryXOffsets[entry], displayEntry * SINGLE_ENTRY_HEIGHT, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
+    Window_FillRectWithColor(&menuData->windows.entries,
+        PIXEL_FILL(15),
+        CHOICES_X + sEntryXOffsets[entry],
+        yPixel, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
+
     if (entry == ENTRY_MESSAGE_BOX_FRAME) {
         Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
             FONT_SYSTEM,
             menuData->entries.asArray[entry].choices[menuData->entries.asArray[entry].selected],
-            48 + CHOICES_X,
-            displayEntry * SINGLE_ENTRY_HEIGHT,
-            TEXT_SPEED_NO_TRANSFER,
-            red,
-            NULL);
+            48 + CHOICES_X, yPixel,
+            TEXT_SPEED_NO_TRANSFER, red, NULL);
         Window_CopyToVRAM(&menuData->windows.entries);
         menuData->redrawMessageBox = TRUE;
         return;
@@ -916,42 +963,26 @@ static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
         PrintEntryDescription(menuData, entry, FALSE);
     }
 
-    xOffset = 0;
-    for (i = 0; i < menuData->entries.asArray[entry].numChoices; i++) {
-        if (i == menuData->entries.asArray[entry].selected) {
-            color = red;
-        } else {
-            color = darkGray;
-        }
-
-        if (i == menuData->entries.asArray[entry].numChoices - 1) {
-            textSpeed = TEXT_SPEED_NO_TRANSFER;
-        } else {
-            textSpeed = TEXT_SPEED_NO_TRANSFER;
-        }
+    s8 xOffset = 0;
+    for (u16 i = 0; i < menuData->entries.asArray[entry].numChoices; i++) {
+        TextColor color = (i == menuData->entries.asArray[entry].selected) ? red : darkGray;
 
         if (entry == ENTRY_BUTTON_MODE) {
             Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
-                xOffset + CHOICES_X,
-                displayEntry * SINGLE_ENTRY_HEIGHT,
-                textSpeed,
-                color,
-                NULL);
+                xOffset + CHOICES_X, yPixel,
+                TEXT_SPEED_NO_TRANSFER, color, NULL);
             xOffset += Font_CalcStringWidth(FONT_SYSTEM, menuData->entries.asArray[entry].choices[i], 0) + 12;
         } else {
             Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
                 i * 48 + CHOICES_X + sEntryXOffsets[entry],
-                displayEntry * SINGLE_ENTRY_HEIGHT,
-                textSpeed,
-                color,
-                NULL);
+                yPixel,
+                TEXT_SPEED_NO_TRANSFER, color, NULL);
         }
     }
-
     Window_CopyToVRAM(&menuData->windows.asArray[1]);
 }
 
@@ -999,11 +1030,47 @@ static BOOL IsTextPrinterDone(const OptionsMenuData *menuData)
     return Text_IsPrinterActive(menuData->textPrinter) == FALSE;
 }
 
+static u8 FirstEntryOnPage(u8 page)
+{
+    for (u8 i = 0; i < MAX_ENTRIES; i++) {
+        if (EntryIsOnPage(i, page) && i != ENTRY_CLOSE) {
+            return i;
+        }
+    }
+    return ENTRY_CLOSE;
+}
+
 static void ProcessMainInput(OptionsMenuData *menuData)
 {
     OptionsMenuEntry *entry = &menuData->entries.asArray[menuData->cursor];
-    u8 oldEntryListOffset;
 
+    // ── L / R : switch page ───────────────────────────────────────────────────
+    if (JOY_NEW(PAD_BUTTON_L)) {
+        if (menuData->currentPage == 0) {
+            menuData->currentPage = NUM_PAGES - 1;
+        } else {
+            menuData->currentPage--;
+        }
+
+        menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        PrintTitleAndEntries(menuData);
+        Sound_PlayEffect(SE_CONFIRM_sseq_3);
+        return;
+    }
+    if (JOY_NEW(PAD_BUTTON_R)) {
+        if (menuData->currentPage >= NUM_PAGES - 1) {
+            menuData->currentPage = 0;
+        } else {
+            menuData->currentPage++;
+        }
+
+        menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        PrintTitleAndEntries(menuData);
+        Sound_PlayEffect(SE_CONFIRM_sseq_3);
+        return;
+    }
+
+    // ── Left / Right d-pad : change the selected value ────────────────────────
     if (menuData->cursor != ENTRY_CLOSE) {
         if (JOY_NEW(PAD_KEY_RIGHT)) {
             entry->selected = (entry->selected + 1) % entry->numChoices;
@@ -1016,42 +1083,30 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
     }
 
-    if (JOY_NEW(PAD_KEY_UP)) {
-        oldEntryListOffset = menuData->entryListOffset;
-        menuData->cursor = (menuData->cursor + MAX_ENTRIES - 1) % MAX_ENTRIES;
-        if (menuData->cursor == MAX_ENTRIES - 1) {
-            menuData->entryListOffset = MAX_ENTRIES - VISIBLE_ENTRY_COUNT;
-        } else if (menuData->cursor < menuData->entryListOffset) {
-            menuData->entryListOffset = menuData->cursor;
-        }
+    // ── Up / Down : move cursor among visible entries on current page ─────────
+    u8 visibleEntries[MAX_ENTRIES];
+    u8 numVisible = 0;
+    u8 cursorPosInPage = 0;
 
-        Bg_ScheduleScroll(menuData->bgConfig,
-            BG_LAYER_MAIN_0,
-            BG_OFFSET_UPDATE_SET_Y,
-            -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
-
-        if (menuData->entryListOffset != oldEntryListOffset) {
-            PrintVisibleEntries(menuData);
+    for (u8 i = 0; i < MAX_ENTRIES; i++) {
+        if (EntryIsOnPage(i, menuData->currentPage)) {
+            if (i == menuData->cursor) {
+                cursorPosInPage = numVisible;
+            }
+            visibleEntries[numVisible++] = i;
         }
+    }
+
+    if (JOY_NEW(PAD_KEY_UP) && numVisible > 0) {
+        cursorPosInPage = (cursorPosInPage + numVisible - 1) % numVisible;
+        menuData->cursor = visibleEntries[cursorPosInPage];
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorPosInPage * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
-    } else if (JOY_NEW(PAD_KEY_DOWN)) {
-        oldEntryListOffset = menuData->entryListOffset;
-        menuData->cursor = (menuData->cursor + 1) % MAX_ENTRIES;
-        if (menuData->cursor == 0) {
-            menuData->entryListOffset = 0;
-        } else if (menuData->cursor >= menuData->entryListOffset + VISIBLE_ENTRY_COUNT) {
-            menuData->entryListOffset++;
-        }
-
-        Bg_ScheduleScroll(menuData->bgConfig,
-            BG_LAYER_MAIN_0,
-            BG_OFFSET_UPDATE_SET_Y,
-            -((menuData->cursor - EntryListOffset(menuData)) * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
-
-        if (menuData->entryListOffset != oldEntryListOffset) {
-            PrintVisibleEntries(menuData);
-        }
+    } else if (JOY_NEW(PAD_KEY_DOWN) && numVisible > 0) {
+        cursorPosInPage = (cursorPosInPage + 1) % numVisible;
+        menuData->cursor = visibleEntries[cursorPosInPage];
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorPosInPage * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     }
@@ -1060,18 +1115,18 @@ static void ProcessMainInput(OptionsMenuData *menuData)
 static BOOL ChangesWereMade(OptionsMenuData *menuData)
 {
     return menuData->options.textSpeed != menuData->entries.textSpeed.selected
-        || menuData->options.gaugeUpdate != menuData->entries.gaugeUpdate.selected
-        || menuData->options.evIvMode != menuData->entries.evIvMode.selected
-        || menuData->options.frameRate != menuData->entries.frameRate.selected
-        || menuData->options.disobedient != menuData->entries.disobedient.selected
-        || menuData->options.easyCatch != menuData->entries.easyCatch.selected
-        || menuData->options.shinyRate != menuData->entries.shinyRate.selected
-        || menuData->options.expRate != menuData->entries.expRate.selected
         || menuData->options.battleScene != menuData->entries.battleScene.selected
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
         || menuData->options.buttonMode != menuData->entries.buttonMode.selected
-        || menuData->options.messageBoxStyle != menuData->entries.messageBoxStyle.selected;
+        || menuData->options.messageBoxStyle != menuData->entries.messageBoxStyle.selected
+        || menuData->options.barGaugeUpdate != menuData->entries.barGaugeUpdate.selected
+        || menuData->options.frameRate != menuData->entries.frameRate.selected
+        || menuData->options.disobedient != menuData->entries.disobedient.selected
+        || menuData->options.easyCatch != menuData->entries.easyCatch.selected
+        || menuData->options.evIvMode != menuData->entries.evIvMode.selected
+        || menuData->options.shinyRate != menuData->entries.shinyRate.selected
+        || menuData->options.expRate != menuData->entries.expRate.selected;
 }
 
 static const WindowTemplate sConfirmationWindowTemplate = {
@@ -1101,17 +1156,20 @@ static u32 ProcessConfirmationInput(OptionsMenuData *menuData)
 static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_TextSpeedDescription,
     OptionsMenu_Text_SoundModeDescription,
-    OptionsMenu_Text_GaugeUpdateDescription,
-    OptionsMenu_Text_EvIvModeDescription,
-    OptionsMenu_Text_FrameRateDescription,
-    OptionsMenu_Text_DisobedientDescription,
-    OptionsMenu_Text_EasyCatchDescription,
-    OptionsMenu_Text_ShinyRateDescription,
-    OptionsMenu_Text_ExpRateDescription,
     OptionsMenu_Text_BattleSceneDescription,
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,
     OptionsMenu_Text_MessageBoxStyleDescription,
+
+    OptionsMenu_Text_BarGaugeUpdateDescription,
+    OptionsMenu_Text_FrameRateDescription,
+
+    OptionsMenu_Text_DisobedientDescription,
+    OptionsMenu_Text_EasyCatchDescription,
+    OptionsMenu_Text_EvIvModeDescription,
+    OptionsMenu_Text_ShinyRateDescription,
+    OptionsMenu_Text_ExpRateDescription,
+
     OptionsMenu_Text_CloseDescription,
 };
 

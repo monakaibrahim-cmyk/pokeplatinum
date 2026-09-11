@@ -7,46 +7,6 @@ enum OptionsTextSpeed {
     OPTIONS_TEXT_SPEED_FAST
 };
 
-// Custom Modification
-enum GuageUpdate {
-    OPTIONS_GAUGE_NORMAL = 0,
-    OPTIONS_GAUGE_INSTANT
-};
-
-enum OptionsEvIvMode {
-    OPTIONS_EV_IV_MODE_NORMAL = 0,
-    OPTIONS_EV_IV_MODE_MAX
-};
-
-enum OptionsFrameRate {
-    OPTIONS_FRAMERATE_CAPPED = 0,
-    OPTIONS_FRAMERATE_UNCAPPED,
-};
-
-enum OptionsDisobedient {
-    OPTIONS_DISOBEDIENT_ON = 0,
-    OPTIONS_DISOBEDIENT_OFF,
-};
-
-enum OptionsEasyCatchMode {
-    OPTIONS_EASYCATCH_OFF = 0,
-    OPTIONS_EASYCATCH_ON
-};
-
-enum OptionsShinyRate {
-    OPTIONS_SHINYRATE_NORMAL = 0,
-    OPTIONS_SHINYRATE_MID,
-    OPTIONS_SHINYRATE_HIGH
-};
-
-enum OptionsExpRate {
-    OPTIONS_EXPRATE_NORMAL = 0,
-    OPTIONS_EXPRATE_MID,
-    OPTIONS_EXPRATE_HIGH
-};
-
-/////////////////////////////////////////////////
-
 enum OptionsSoundMode {
     OPTIONS_SOUND_MODE_STEREO = 0,
     OPTIONS_SOUND_MODE_MONO
@@ -89,6 +49,43 @@ enum OptionsFrame {
     OPTIONS_FRAME_18,
     OPTIONS_FRAME_19,
     OPTIONS_FRAME_20
+};
+
+enum BarGuageUpdate {
+    OPTIONS_BAR_GAUGE_NORMAL = 0,
+    OPTIONS_BAR_GAUGE_INSTANT
+};
+
+enum OptionsFrameRate {
+    OPTIONS_FRAMERATE_CAPPED = 0,
+    OPTIONS_FRAMERATE_UNCAPPED,
+};
+
+enum OptionsDisobedient {
+    OPTIONS_DISOBEDIENT_ON = 0,
+    OPTIONS_DISOBEDIENT_OFF,
+};
+
+enum OptionsEasyCatchMode {
+    OPTIONS_EASYCATCH_OFF = 0,
+    OPTIONS_EASYCATCH_ON
+};
+
+enum OptionsEvIvMode {
+    OPTIONS_EV_IV_MODE_NORMAL = 0,
+    OPTIONS_EV_IV_MODE_MAX
+};
+
+enum OptionsShinyRate {
+    OPTIONS_SHINYRATE_NORMAL = 0,
+    OPTIONS_SHINYRATE_MID,
+    OPTIONS_SHINYRATE_HIGH
+};
+
+enum OptionsExpRate {
+    OPTIONS_EXPRATE_NORMAL = 0,
+    OPTIONS_EXPRATE_MID,
+    OPTIONS_EXPRATE_HIGH
 };
 
 #endif // POKEPLATINUM_CONSTANTS_GAME_OPTIONS_H

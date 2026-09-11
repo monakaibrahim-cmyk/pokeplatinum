@@ -28,20 +28,18 @@ void Options_Init(Options *options)
 
     options->textSpeed = OPTIONS_TEXT_SPEED_FAST;
     options->soundMode = OPTIONS_SOUND_MODE_STEREO;
-
-    // Custom Modification
-    options->gaugeUpdate = OPTIONS_GAUGE_INSTANT;
-    options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
-    options->frameRate = OPTIONS_FRAMERATE_CAPPED;
-    options->disobedient = OPTIONS_DISOBEDIENT_ON;
-    options->easyCatch = OPTIONS_EASYCATCH_OFF;
-    options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
-    options->expRate = OPTIONS_EXPRATE_NORMAL;
-
     options->battleStyle = OPTIONS_BATTLE_STYLE_SHIFT;
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
     options->buttonMode = OPTIONS_BUTTON_MODE_NORMAL;
     options->frame = OPTIONS_FRAME_1;
+
+    options->barGaugeUpdate = OPTIONS_BAR_GAUGE_INSTANT;
+    options->frameRate = OPTIONS_FRAMERATE_CAPPED;
+    options->disobedient = OPTIONS_DISOBEDIENT_ON;
+    options->easyCatch = OPTIONS_EASYCATCH_OFF;
+    options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
+    options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
+    options->expRate = OPTIONS_EXPRATE_NORMAL;
 }
 
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode)
@@ -86,79 +84,6 @@ u8 Options_TextFrameDelay(const Options *options)
         return TEXT_SPEED_FAST;
     }
 }
-
-// Custom Modification
-int Options_GaugeUpdate(const Options* options)
-{
-    return options->gaugeUpdate;
-}
-
-void Options_SetGaugeUpdate(Options *options, enum GuageUpdate mode)
-{
-    options->gaugeUpdate = mode;
-}
-
-int Options_EvIvMode(const Options *options)
-{
-    return options->evIvMode;
-}
-
-void Options_SetEvIvMode(Options *options, enum OptionsEvIvMode mode)
-{
-    options->evIvMode = mode;
-}
-
-int Options_FrameRate(const Options *options)
-{
-    return options->frameRate;
-}
-
-void Options_SetFrameRate(Options *options, enum OptionsFrameRate rate)
-{
-    options->frameRate = rate;
-}
-
-int Options_Disobedient(const Options *options)
-{
-    return options->disobedient;
-}
-
-void Options_SetDisobedient(Options *options, enum OptionsDisobedient mode)
-{
-    options->disobedient = mode;
-}
-
-int Options_EasyCatch(const Options *options)
-{
-    return options->easyCatch;
-}
-
-void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
-{
-    options->easyCatch = mode;
-}
-
-int Options_ShinyRate(const Options *options)
-{
-    return options->shinyRate;
-}
-
-void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate)
-{
-    options->shinyRate = rate;
-}
-
-int Options_ExpRate(const Options *options)
-{
-    return options->expRate;
-}
-
-void Options_SetExpRate(Options *options, enum OptionsExpRate rate)
-{
-    options->expRate = rate;
-}
-
-////////////////////////////////////////////////////////
 
 int Options_SoundMode(const Options *options)
 {
@@ -208,4 +133,74 @@ int Options_Frame(const Options *options)
 void Options_SetFrame(Options *options, enum OptionsFrame frame)
 {
     options->frame = frame;
+}
+
+int Options_BarGaugeUpdate(const Options* options)
+{
+    return options->barGaugeUpdate;
+}
+
+void Options_SetBarGaugeUpdate(Options *options, enum BarGuageUpdate mode)
+{
+    options->barGaugeUpdate = mode;
+}
+
+int Options_FrameRate(const Options *options)
+{
+    return options->frameRate;
+}
+
+void Options_SetFrameRate(Options *options, enum OptionsFrameRate rate)
+{
+    options->frameRate = rate;
+}
+
+int Options_Disobedient(const Options *options)
+{
+    return options->disobedient;
+}
+
+void Options_SetDisobedient(Options *options, enum OptionsDisobedient mode)
+{
+    options->disobedient = mode;
+}
+
+int Options_EasyCatch(const Options *options)
+{
+    return options->easyCatch;
+}
+
+void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode)
+{
+    options->easyCatch = mode;
+}
+
+int Options_EvIvMode(const Options *options)
+{
+    return options->evIvMode;
+}
+
+void Options_SetEvIvMode(Options *options, enum OptionsEvIvMode mode)
+{
+    options->evIvMode = mode;
+}
+
+int Options_ShinyRate(const Options *options)
+{
+    return options->shinyRate;
+}
+
+void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate)
+{
+    options->shinyRate = rate;
+}
+
+int Options_ExpRate(const Options *options)
+{
+    return options->expRate;
+}
+
+void Options_SetExpRate(Options *options, enum OptionsExpRate rate)
+{
+    options->expRate = rate;
 }

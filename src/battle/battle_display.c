@@ -56,6 +56,7 @@
 #include "character_sprite.h"
 #include "enums.h"
 #include "flags.h"
+#include "game_options.h"
 #include "heap.h"
 #include "item.h"
 #include "message.h"
@@ -67,6 +68,7 @@
 #include "pokemon_anim.h"
 #include "pokemon_sprite.h"
 #include "render_window.h"
+#include "save_player.h"
 #include "sound.h"
 #include "sound_playback.h"
 #include "sprite_system.h"
@@ -76,8 +78,6 @@
 #include "text.h"
 #include "trainer_info.h"
 #include "unk_0201567C.h"
-#include "game_options.h"
-#include "save_player.h"
 
 #include "res/text/bank/battle_strings.h"
 
@@ -4906,7 +4906,7 @@ static void Task_UpdateHPGauge(SysTask *task, void *data)
         HealthBox_CalcHP(healthbox, healthbox->damage);
         healthbox->state++;
     case 1:
-        if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT)
+        if (Options_BarGaugeUpdate(options) == OPTIONS_BAR_GAUGE_INSTANT)
         {
             while(Healthbox_DrawHPBar(healthbox) != -1);
             healthbox->state++;
@@ -4945,7 +4945,7 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
         if (healthbox->expSoundTimer < 8) {
             healthbox->expSoundTimer++;
         }
-        if (Options_GaugeUpdate(options) == OPTIONS_GAUGE_INSTANT) {
+        if (Options_BarGaugeUpdate(options) == OPTIONS_BAR_GAUGE_INSTANT) {
             while(Healthbox_DrawExpBar(healthbox) != -1);
             result = -1;
         } else {

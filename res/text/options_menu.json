@@ -226,22 +226,30 @@
       "en_US": "Return to the game."
     },
     {
-      "id": "OptionsMenu_Text_GaugeUpdateLabel",
-      "en_US": "HP/EXP BAR GAUGE"
+      "id": "OptionsMenu_Text_Title_1",
+      "en_US": "QoL 1 / 2"
     },
     {
-      "id": "OptionsMenu_Text_GaugeUpdateNormal",
+      "id": "OptionsMenu_Text_Title_2",
+      "en_US": "QoL 2 / 2"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateLabel",
+      "en_US": "HP/EXP GAUGE"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateNormal",
       "en_US": "NORMAL"
     },
     {
-      "id": "OptionsMenu_Text_GaugeUpdateInstant",
+      "id": "OptionsMenu_Text_BarGaugeUpdateInstant",
       "en_US": "INSTANT"
     },
     {
-      "id": "OptionsMenu_Text_GaugeUpdateDescription",
+      "id": "OptionsMenu_Text_BarGaugeUpdateDescription",
       "en_US": [
-        "Choose between Normal Gauge Update or\n",
-        "Instant Gauge Update."
+        "Choose between Normal Update or\n",
+        "Instant Update."
       ]
     },
     {
