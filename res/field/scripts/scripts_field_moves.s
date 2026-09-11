@@ -302,6 +302,10 @@ FieldMoves_Water:
     LockAll
     CheckHasPartner VAR_RESULT
     GoToIfEq VAR_RESULT, TRUE, FieldMoves_CantUseSurf
+    CheckTMHMMoveCompatibility MOVE_SURF, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseSurf
+    CheckItem ITEM_HM03, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseSurf
     Message FieldMoves_Text_WouldYouLikeToUseSurf
     ShowYesNoMenu VAR_RESULT
     GoToIfEq VAR_RESULT, MENU_YES, FieldMoves_UseSurfFromField
