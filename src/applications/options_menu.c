@@ -752,11 +752,10 @@ static void PrintTitleAndEntries(OptionsMenuData *menuData)
     Window_FillTilemap(&menuData->windows.entries, PIXEL_FILL(15));
     Window_ClearTilemap(&menuData->windows.entries);
 
-    // Title (Page-specific title: OptionsMenu_Text_Title_0 for page 0, OptionsMenu_Text_Title_1 for page 1)
+    // Title (Page-specific title: OptionsMenu_Text_Title for page 0, OptionsMenu_Text_Title_1 for page 1)
     String *string = String_Init(256, menuData->heapID);
     MessageLoader_GetString(menuData->msgLoader, sPageTitles[menuData->currentPage], string);
     Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, string, 2, 2, TEXT_SPEED_INSTANT, transparentBg, NULL);
-    String_Free(string);
 
     // Only draw entries on the current page
     for (u16 i = 0; i < MAX_ENTRIES; i++) {
@@ -771,6 +770,10 @@ static void PrintTitleAndEntries(OptionsMenuData *menuData)
 
         PrintEntryChoicesAtRow(menuData, i, row);
     }
+
+    // Reset Cursor to the first entry item when changing page
+    u8 cursorRow = PageRowIndex(menuData->cursor, menuData->currentPage);
+    Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorRow * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
 
     PrintEntryDescription(menuData, menuData->cursor, TRUE);
     Window_CopyToVRAM(&menuData->windows.title);
@@ -962,11 +965,12 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
 
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -FIRST_ENTRY_OFFSET);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
         return;
     }
-    
+
     if (JOY_NEW(PAD_BUTTON_R)) {
         if (menuData->currentPage >= NUM_PAGES - 1) {
             menuData->currentPage = 0;
@@ -975,6 +979,7 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
 
         menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -FIRST_ENTRY_OFFSET);
         PrintTitleAndEntries(menuData);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
         return;
