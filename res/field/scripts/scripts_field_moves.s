@@ -128,9 +128,10 @@ FieldMoves_Rock:
     PlaySE SE_CONFIRM_sseq_3
     LockAll
     FacePlayer
-    FindPartySlotWithMove VAR_RESULT, MOVE_ROCK_SMASH
-    SetVar VAR_0x8004, VAR_RESULT
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseRockSmash
+    CheckTMHMMoveCompatibility MOVE_ROCK_SMASH, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseRockSmash
+    CheckItem ITEM_HM06, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseRockSmash
     CheckBadgeAcquired BADGE_ID_COAL, VAR_RESULT
     GoToIfEq VAR_RESULT, FALSE, FieldMoves_CantUseRockSmash
     Message FieldMoves_Text_WouldYouLikeToUseRockSmash
@@ -186,8 +187,10 @@ FieldMoves_Boulder:
     FacePlayer
     DoStrengthFunc FIELD_MOVE_FUNC_CHECK_ACTIVE, VAR_RESULT
     GoToIfEq VAR_RESULT, TRUE, FieldMoves_StrenghtAlreadyActive
-    FindPartySlotWithMove VAR_RESULT, MOVE_STRENGTH
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseStrength
+    CheckTMHMMoveCompatibility MOVE_STRENGTH, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseStrength
+    CheckItem ITEM_HM04, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseStrength
     CheckBadgeAcquired BADGE_ID_MINE, VAR_RESULT
     GoToIfEq VAR_RESULT, FALSE, FieldMoves_CantUseStrength
     Message FieldMoves_Text_WouldYouLikeToUseStrength
@@ -206,9 +209,7 @@ FieldMoves_CantUseStrength:
 
 FieldMoves_UseStrengthFromField:
     DoStrengthFunc FIELD_MOVE_FUNC_SET_ACTIVE
-    FindPartySlotWithMove VAR_RESULT, MOVE_STRENGTH
-    SetVar VAR_0x8004, VAR_RESULT
-    BufferPartyMonNickname 0, VAR_RESULT
+    BufferPartyMonNickname 0, VAR_0x8004
     Message FieldMoves_Text_PokemonUsedStrength
     PlayHMCutIn VAR_0x8004
     CloseMessage
@@ -246,8 +247,10 @@ FieldMoves_UseStrengthFromMenu:
 FieldMoves_RockyWall:
     PlaySE SE_CONFIRM_sseq_3
     LockAll
-    FindPartySlotWithMove VAR_RESULT, MOVE_ROCK_CLIMB
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseRockClimb
+    CheckTMHMMoveCompatibility MOVE_ROCK_CLIMB, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseRockClimb
+    CheckItem ITEM_HM08, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseRockClimb
     CheckBadgeAcquired BADGE_ID_ICICLE, VAR_RESULT
     GoToIfEq VAR_RESULT, FALSE, FieldMoves_CantUseRockClimb
     CheckHasPartner VAR_RESULT
@@ -274,9 +277,7 @@ FieldMoves_NoRockClimbingWithPartner:
     End
 
 FieldMoves_UseRockClimbFromField:
-    FindPartySlotWithMove VAR_RESULT, MOVE_ROCK_CLIMB
-    SetVar VAR_0x8004, VAR_RESULT
-    BufferPartyMonNickname 0, VAR_RESULT
+    BufferPartyMonNickname 0, VAR_0x8004
     Message FieldMoves_Text_PokemonUsedRockClimb
     CloseMessage
     UseRockClimb VAR_0x8004
@@ -342,8 +343,10 @@ FieldMoves_UseSurfFromMenu:
 FieldMoves_Fog_Unused:
     PlaySE SE_CONFIRM_sseq_3
     LockAll
-    FindPartySlotWithMove VAR_RESULT, MOVE_DEFOG
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseDefog_Unused
+    CheckTMHMMoveCompatibility MOVE_DEFOG, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseDefog_Unused
+    CheckItem ITEM_HM05, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseDefog_Unused
     Message FieldMoves_Text_WouldYouLikeToUseDefog_Unused
     ShowYesNoMenu VAR_RESULT
     GoToIfEq VAR_RESULT, MENU_YES, FieldMoves_UseDefogFromField_Unused
@@ -359,9 +362,7 @@ FieldMoves_CantUseDefog_Unused:
     End
 
 FieldMoves_UseDefogFromField_Unused:
-    FindPartySlotWithMove VAR_RESULT, MOVE_DEFOG
-    SetVar VAR_0x8004, VAR_RESULT
-    BufferPartyMonNickname 0, VAR_RESULT
+    BufferPartyMonNickname 0, VAR_0x8004
     Message FieldMoves_Text_PokemonUsedDefog
     CloseMessage
     PlayHMCutIn VAR_0x8004
@@ -417,8 +418,10 @@ FieldMoves_End3:
 FieldMoves_Waterfall:
     PlaySE SE_CONFIRM_sseq_3
     LockAll
-    FindPartySlotWithMove VAR_RESULT, MOVE_WATERFALL
-    GoToIfEq VAR_RESULT, MAX_PARTY_SIZE, FieldMoves_CantUseWaterfall
+    CheckTMHMMoveCompatibility MOVE_WATERFALL, VAR_0x8004, VAR_RESULT
+    GoToIfEQ VAR_RESULT, FALSE, FieldMoves_CantUseWaterfall
+    CheckItem ITEM_HM07, 1, VAR_RESULT
+    GoToIfNe VAR_RESULT, TRUE, FieldMoves_CantUseWaterfall
     CheckBadgeAcquired BADGE_ID_BEACON, VAR_RESULT
     GoToIfEq VAR_RESULT, FALSE, FieldMoves_CantUseWaterfall
     Message FieldMoves_Text_WouldYouLikeToUseWaterfall
@@ -436,9 +439,7 @@ FieldMoves_CantUseWaterfall:
     End
 
 FieldMoves_UseWaterfallFromField:
-    FindPartySlotWithMove VAR_RESULT, MOVE_WATERFALL
-    SetVar VAR_0x8004, VAR_RESULT
-    BufferPartyMonNickname 0, VAR_RESULT
+    BufferPartyMonNickname 0, VAR_0x8004
     Message FieldMoves_Text_PokemonUsedWaterfall
     CloseMessage
     UseWaterfall VAR_0x8004
