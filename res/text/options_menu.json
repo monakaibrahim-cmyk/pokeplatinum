@@ -339,6 +339,29 @@
     {
       "id": "OptionsMenu_Text_ShinyRateDescription",
       "en_US": "Choose Shiny Rate."
+    },
+    {
+      "id": "OptionsMenu_Text_ExpRateLabel",
+      "en_US": "EXP RATE"
+    },
+    {
+      "id": "OptionsMenu_Text_ExpRateNormal",
+      "en_US": "NORMAL"
+    },
+    {
+      "id": "OptionsMenu_Text_ExpRateMid",
+      "en_US": "MID"
+    },
+    {
+      "id": "OptionsMenu_Text_ExpRateHigh",
+      "en_US": "HIGH"
+    },
+    {
+      "id": "OptionsMenu_Text_ExpRateDescription",
+      "en_US": [
+        "Choose Exp Rate.\n",
+        "Normal, Mid: x4, High: x8"
+      ]
     }
   ]
 }

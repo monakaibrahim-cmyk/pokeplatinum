@@ -22,8 +22,6 @@
 #include "unk_02017038.h"
 #include "game_options.h"
 
-#include "debug.h"
-
 BOOL Pokemon_CanBattle(Pokemon *mon)
 {
     // this can be simplified further, but it won't match
@@ -90,8 +88,6 @@ BOOL Pokemon_GiveMonFromScript(enum HeapID heapID, SaveData *saveData, u16 speci
     Pokemon_SetValue(mon, MON_DATA_HELD_ITEM, &item);
 
     if (Options_EvIvMode(options) == OPTIONS_EV_IV_MODE_MAX) {
-        EmulatorLog("Pokemon_GiveMonFromScript | Flag: OPTIONS_EV_IV_MODE_MAX");
-
         u8 maxIv = 31;
         u16 maxEv = 252;
 
@@ -110,8 +106,6 @@ BOOL Pokemon_GiveMonFromScript(enum HeapID heapID, SaveData *saveData, u16 speci
         Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
 
         Pokemon_CalcLevelAndStats(mon);
-    } else {
-        EmulatorLog("Pokemon_GiveMonFromScript | Flag: OPTIONS_EV_IV_MODE_NORMAL");
     }
     
     result = Party_AddPokemon(party, mon);

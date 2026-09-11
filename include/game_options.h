@@ -14,6 +14,7 @@ typedef struct Options {
     u16 disobedient : 2;
     u16 easyCatch : 2;
     u16 shinyRate : 4;
+    u16 expRate : 4;
     u16 battleStyle : 1;
     u16 battleScene : 1;
     u16 buttonMode : 2;
@@ -41,6 +42,8 @@ int Options_EasyCatch(const Options *options);
 void Options_SetEasyCatch(Options *options, enum OptionsEasyCatchMode mode);
 int Options_ShinyRate(const Options *options);
 void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate);
+int Options_ExpRate(const Options *options);
+void Options_SetExpRate(Options *options, enum OptionsExpRate rate);
 
 u8 Options_TextFrameDelay(const Options *options);
 int Options_SoundMode(const Options *options);

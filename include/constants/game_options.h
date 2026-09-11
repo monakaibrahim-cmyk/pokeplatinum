@@ -39,6 +39,12 @@ enum OptionsShinyRate {
     OPTIONS_SHINYRATE_HIGH
 };
 
+enum OptionsExpRate {
+    OPTIONS_EXPRATE_NORMAL = 0,
+    OPTIONS_EXPRATE_MID,
+    OPTIONS_EXPRATE_HIGH
+};
+
 /////////////////////////////////////////////////
 
 enum OptionsSoundMode {

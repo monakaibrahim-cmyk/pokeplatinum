@@ -1184,6 +1184,8 @@ static void DrawSkillsPageWindows(PokemonSummaryScreen *summaryScreen)
 
     u32 hpWindowWidth = Window_GetWidth(&summaryScreen->extraWindows[SUMMARY_WINDOW_HP]) * 8;
 
+    PrintCurrentAndMaxInfo(summaryScreen, 0, PokemonSummary_Text_Slash, PokemonSummary_Text_TemplateCurrentHp, PokemonSummary_Text_TemplateMaxHp, summaryScreen->monData.curHP, summaryScreen->monData.maxHP, 3, hpWindowWidth / 2, 0);
+    SetAndFormatNumberBuf(summaryScreen, PokemonSummary_Text_TemplateAttack, summaryScreen->monData.attack, 3, PADDING_MODE_NONE);
     PrintStatWithNatureColor(summaryScreen, STAT_ATTACK, SUMMARY_WINDOW_ATTACK);
     SetAndFormatNumberBuf(summaryScreen, PokemonSummary_Text_TemplateDefense, summaryScreen->monData.defense, 3, PADDING_MODE_NONE);
     PrintStatWithNatureColor(summaryScreen, STAT_DEFENSE, SUMMARY_WINDOW_DEFENSE);

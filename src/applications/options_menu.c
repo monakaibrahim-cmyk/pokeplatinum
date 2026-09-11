@@ -66,6 +66,7 @@ enum OptionsMenuEntryID {
     ENTRY_DISOBEDIENT,
     ENTRY_EASYCATCH,
     ENTRY_SHINYRATE,
+    ENTRY_EXPRATE,
     ENTRY_BATTLE_SCENE,
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
@@ -87,7 +88,7 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 8;
+    u32 cursor : 9;
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
@@ -119,6 +120,7 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry disobedient;
             OptionsMenuEntry easyCatch;
             OptionsMenuEntry shinyRate;
+            OptionsMenuEntry expRate;
             OptionsMenuEntry battleScene;
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
@@ -180,6 +182,7 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     menuData->options.disobedient = Options_Disobedient(options);
     menuData->options.easyCatch = Options_EasyCatch(options);
     menuData->options.shinyRate = Options_ShinyRate(options);
+    menuData->options.expRate = Options_ExpRate(options);
 
     menuData->options.battleScene = Options_BattleScene(options);
     menuData->options.battleStyle = Options_BattleStyle(options);
@@ -208,6 +211,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
         menuData->options.disobedient = menuData->entries.disobedient.selected;
         menuData->options.easyCatch = menuData->entries.easyCatch.selected;
         menuData->options.shinyRate = menuData->entries.shinyRate.selected;
+        menuData->options.expRate = menuData->entries.expRate.selected;
 
         menuData->options.battleScene = menuData->entries.battleScene.selected;
         menuData->options.battleStyle = menuData->entries.battleStyle.selected;
@@ -225,6 +229,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     Options_SetDisobedient(menuData->saveOptions, menuData->options.disobedient);
     Options_SetEasyCatch(menuData->saveOptions, menuData->options.easyCatch);
     Options_SetShinyRate(menuData->saveOptions, menuData->options.shinyRate);
+    Options_SetExpRate(menuData->saveOptions, menuData->options.expRate);
 
     Options_SetBattleScene(menuData->saveOptions, menuData->options.battleScene);
     Options_SetBattleStyle(menuData->saveOptions, menuData->options.battleStyle);
@@ -727,6 +732,7 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_DisobedientLabel,
     OptionsMenu_Text_EasyCatchLabel,
     OptionsMenu_Text_ShinyRateLabel,
+    OptionsMenu_Text_ExpRateLabel,
     OptionsMenu_Text_BattleSceneLabel,
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
@@ -805,6 +811,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     2,
     2,
     3,
+    3,
     2,
     2,
     3,
@@ -821,6 +828,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_DisobedientOn,
     OptionsMenu_Text_EasyCatchOff,
     OptionsMenu_Text_ShinyRateNormal,
+    OptionsMenu_Text_ExpRateNormal,
     OptionsMenu_Text_BattleSceneOn,
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
@@ -847,6 +855,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.disobedient.selected = menuData->options.disobedient;
     menuData->entries.easyCatch.selected = menuData->options.easyCatch;
     menuData->entries.shinyRate.selected = menuData->options.shinyRate;
+    menuData->entries.expRate.selected = menuData->options.expRate;
 
     menuData->entries.battleScene.selected = menuData->options.battleScene;
     menuData->entries.battleStyle.selected = menuData->options.battleStyle;
@@ -856,6 +865,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
 }
 
 static const s8 sEntryXOffsets[MAX_ENTRIES] = {
+    0,
     0,
     0,
     0,
@@ -1056,6 +1066,7 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.disobedient != menuData->entries.disobedient.selected
         || menuData->options.easyCatch != menuData->entries.easyCatch.selected
         || menuData->options.shinyRate != menuData->entries.shinyRate.selected
+        || menuData->options.expRate != menuData->entries.expRate.selected
         || menuData->options.battleScene != menuData->entries.battleScene.selected
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
@@ -1096,6 +1107,7 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_DisobedientDescription,
     OptionsMenu_Text_EasyCatchDescription,
     OptionsMenu_Text_ShinyRateDescription,
+    OptionsMenu_Text_ExpRateDescription,
     OptionsMenu_Text_BattleSceneDescription,
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,

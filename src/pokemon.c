@@ -54,7 +54,6 @@
 #include "unk_02017038.h"
 #include "unk_02092494.h"
 #include "save_player.h"
-#include "debug.h"
 
 #include "res/pokemon/regional_pokedex_size.h"
 #include "res/trainers/classes/trbgra.naix"
@@ -4659,8 +4658,6 @@ static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *tr
     BoxPokemon_SetValue(boxMon, MON_DATA_POKEBALL, &monPokeball);
 
     if (evIvMode == OPTIONS_EV_IV_MODE_MAX) {
-        EmulatorLog("InitializeBoxPokemonAfterCapture | Flag: OPTIONS_EV_IV_MODE_MAX");
-
         u8 maxIv = 31;
         u16 maxEv = 252;
 
@@ -4677,8 +4674,6 @@ static void InitializeBoxPokemonAfterCapture(BoxPokemon *boxMon, TrainerInfo *tr
         BoxPokemon_SetValue(boxMon, MON_DATA_SPEED_EV, &maxEv);
         BoxPokemon_SetValue(boxMon, MON_DATA_SPATK_EV, &maxEv);
         BoxPokemon_SetValue(boxMon, MON_DATA_SPDEF_EV, &maxEv);
-    } else {
-        EmulatorLog("InitializeBoxPokemonAfterCapture | Flag: OPTIONS_EV_IV_MODE_NORMAL");
     }
 
     BoxPokemon_SetValue(boxMon, MON_DATA_MET_TERRAIN, &metTerrain);

@@ -2,7 +2,6 @@
 
 #include <nitro.h>
 #include <string.h>
-#include "debug.h"
 
 #include "constants/battle.h"
 #include "constants/forms.h"
@@ -1151,15 +1150,12 @@ static BOOL TryGenerateWildMon(Pokemon *firstPartyMon, const int fishingRodType,
     switch (Options_ShinyRate(options)) {
     case OPTIONS_SHINYRATE_NORMAL:
         rate = 0;
-        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_NORMAL");
         break;
     case OPTIONS_SHINYRATE_MID:
         rate = 32;
-        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_MID");
         break;
     case OPTIONS_SHINYRATE_HIGH:
         rate = 1;
-        EmulatorLog("TryGenerateWildMon | Flag: OPTIONS_SHINYRATE_HIGH");
         break;
     }
 

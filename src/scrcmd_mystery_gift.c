@@ -39,8 +39,6 @@
 #include "unk_02092494.h"
 #include "vars_flags.h"
 
-#include "debug.h"
-
 #include "res/text/bank/mystery_gift_deliveryman.h"
 
 #define RANDOMIZE_PERSONALITY          0
@@ -192,16 +190,6 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
     u32 giftOtID = Pokemon_GetValue(mon, MON_DATA_OT_ID, NULL);
     u32 personality = ARNG_Next(OS_GetTick());
 
-    // if (giftPersonality == RANDOMIZE_PERSONALITY) {
-    //     (void)0;
-    // } else if (giftPersonality == RANDOMIZE_PERSONALITY_NO_SHINY) {
-    //     while (Pokemon_IsPersonalityShiny(giftOtID, personality)) {
-    //         personality = ARNG_Next(personality);
-    //     }
-    // } else {
-    //     personality = giftPersonality;
-    // }
-
     // Shiny Modification
     u32 targetOtID = giftData->pokemonGiftData.hasCustomOT ? giftOtID : TrainerInfo_ID(trainerInfo);
     int rate = 0;
@@ -327,8 +315,6 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
     }
 
     if (Options_EvIvMode(options) == OPTIONS_EV_IV_MODE_MAX) {
-        EmulatorLog("GivePokemon | Flag: OPTIONS_EV_IV_MODE_MAX");
-
         u8 maxIv = 31;
         u16 maxEv = 252;
 
@@ -345,8 +331,6 @@ static void GivePokemon(FieldSystem *fieldSystem, GiftData *dummy)
         Pokemon_SetValue(mon, MON_DATA_SPEED_EV, &maxEv);
         Pokemon_SetValue(mon, MON_DATA_SPATK_EV, &maxEv);
         Pokemon_SetValue(mon, MON_DATA_SPDEF_EV, &maxEv);
-    } else {
-        EmulatorLog("GivePokemon | Flag: OPTIONS_EV_IV_MODE_NORMAL");
     }
 
     Pokemon_CalcLevelAndStats(mon);

@@ -36,6 +36,7 @@ void Options_Init(Options *options)
     options->disobedient = OPTIONS_DISOBEDIENT_ON;
     options->easyCatch = OPTIONS_EASYCATCH_OFF;
     options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
+    options->expRate = OPTIONS_EXPRATE_NORMAL;
 
     options->battleStyle = OPTIONS_BATTLE_STYLE_SHIFT;
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
@@ -145,6 +146,16 @@ int Options_ShinyRate(const Options *options)
 void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate)
 {
     options->shinyRate = rate;
+}
+
+int Options_ExpRate(const Options *options)
+{
+    return options->expRate;
+}
+
+void Options_SetExpRate(Options *options, enum OptionsExpRate rate)
+{
+    options->expRate = rate;
 }
 
 ////////////////////////////////////////////////////////

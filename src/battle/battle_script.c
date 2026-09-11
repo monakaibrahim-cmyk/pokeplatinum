@@ -9764,6 +9764,12 @@ static void BattleScript_GetExpTask(SysTask *task, void *inData)
                 msg.id = BattleStrings_Text_PokemonGainedABoostedExpPoints; // "{0} gained a boosted {1} Exp. Points!"
             }
 
+            if (Options_ExpRate(BattleSystem_GetOptions(data->battleSys)) == OPTIONS_EXPRATE_MID) {
+                totalExp *= 4;
+            } else if (Options_ExpRate(BattleSystem_GetOptions(data->battleSys)) == OPTIONS_EXPRATE_HIGH) {
+                totalExp *= 8;
+            }
+
             u32 newExp = Pokemon_GetValue(mon, MON_DATA_EXPERIENCE, NULL);
             data->tmpData[GET_EXP_NEW_EXP] = newExp - Pokemon_GetCurrentLevelBaseExp(mon);
             newExp += totalExp;
