@@ -32,6 +32,8 @@ void Options_Init(Options *options)
     options->battleScene = OPTIONS_BATTLE_SCENE_ON;
     options->buttonMode = OPTIONS_BUTTON_MODE_NORMAL;
     options->frame = OPTIONS_FRAME_1;
+
+    options->barGaugeUpdate = OPTIONS_BAR_GAUGE_NORMAL;
 }
 
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode)
@@ -125,4 +127,14 @@ int Options_Frame(const Options *options)
 void Options_SetFrame(Options *options, enum OptionsFrame frame)
 {
     options->frame = frame;
+}
+
+int Options_BarGaugeUpdate(const Options* options)
+{
+    return options->barGaugeUpdate;
+}
+
+void Options_SetBarGaugeUpdate(Options *options, enum BarGaugeUpdate mode)
+{
+    options->barGaugeUpdate = mode;
 }

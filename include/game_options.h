@@ -13,6 +13,9 @@ typedef struct Options {
     u16 buttonMode : 2;
     u16 frame : 5;
     u16 : 1;
+
+    u16 barGaugeUpdate : 1;
+    u16 : 15;
 } Options;
 
 Options *Options_New(enum HeapID heapID);
@@ -32,5 +35,8 @@ int Options_ButtonMode(const Options *options);
 void Options_SetButtonMode(Options *options, enum OptionsButtonMode mode);
 int Options_Frame(const Options *options);
 void Options_SetFrame(Options *options, enum OptionsFrame frame);
+
+int Options_BarGaugeUpdate(const Options* options);
+void Options_SetBarGaugeUpdate(Options *options, enum BarGaugeUpdate mode);
 
 #endif // POKEPLATINUM_GAME_OPTIONS_H

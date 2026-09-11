@@ -63,9 +63,27 @@ enum OptionsMenuEntryID {
     ENTRY_BATTLE_STYLE,
     ENTRY_BUTTON_MODE,
     ENTRY_MESSAGE_BOX_FRAME,
+
+    ENTRY_BAR_GAUGE_UPDATE,
+
     ENTRY_CLOSE,
 
     MAX_ENTRIES,
+};
+
+#define NUM_PAGES 2
+
+static const u8 sEntryPage[MAX_ENTRIES] = {
+    [ENTRY_TEXT_SPEED]                      = 0,
+    [ENTRY_SOUND_MODE]                      = 0,
+    [ENTRY_BATTLE_SCENE]                    = 0,
+    [ENTRY_BATTLE_STYLE]                    = 0,
+    [ENTRY_BUTTON_MODE]                     = 0,
+    [ENTRY_MESSAGE_BOX_FRAME]               = 0,
+
+    [ENTRY_BAR_GAUGE_UPDATE]                 = 1,    
+
+    [ENTRY_CLOSE]                           = 0xFF,
 };
 
 typedef struct OptionsMenuEntry {
@@ -80,7 +98,8 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 3;
+    u32 cursor : 4;
+    u32 currentPage : 4;
     u32 dummy10_5 : 16;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
@@ -109,6 +128,7 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry battleStyle;
             OptionsMenuEntry buttonMode;
             OptionsMenuEntry messageBoxStyle;
+            OptionsMenuEntry barGaugeUpdate;
             OptionsMenuEntry close;
         };
     } entries;
@@ -129,7 +149,10 @@ static void LoadBgTiles(OptionsMenuData *menuData);
 static void SetupWindows(OptionsMenuData *menuData);
 
 static void PrintTitleAndEntries(OptionsMenuData *param0);
+static BOOL EntryIsOnPage(u8 entry, u8 page);
+static u8 PageRowIndex(u8 entry, u8 page);
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry);
+static void PrintEntryChoicesAtRow(OptionsMenuData *menuData, u16 entry, u8 row);
 static void PrintEntryDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
 static void PrintBankEntryAsDescription(OptionsMenuData *menuData, u16 entry, BOOL scheduleVRAMCopy);
 static BOOL IsTextPrinterDone(const OptionsMenuData *menuData);
@@ -138,6 +161,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData);
 static BOOL ChangesWereMade(OptionsMenuData *menuData);
 static void DrawConfirmationPrompt(OptionsMenuData *menuData);
 
+static u8 FirstEntryOnPage(u8 page);
 static void ProcessMainInput(OptionsMenuData *menuData);
 static u32 ProcessConfirmationInput(OptionsMenuData *menuData);
 
@@ -162,6 +186,9 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     menuData->options.soundMode = Options_SoundMode(options);
     menuData->options.buttonMode = Options_ButtonMode(options);
     menuData->options.messageBoxStyle = Options_Frame(options);
+
+    menuData->options.barGaugeUpdate = Options_BarGaugeUpdate(options);
+
     menuData->heapID = HEAP_ID_OPTIONS_MENU;
     menuData->saveOptions = options;
 
@@ -181,6 +208,8 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
         menuData->options.soundMode = menuData->entries.soundMode.selected;
         menuData->options.buttonMode = menuData->entries.buttonMode.selected;
         menuData->options.messageBoxStyle = menuData->entries.messageBoxStyle.selected;
+
+        menuData->options.barGaugeUpdate = menuData->entries.barGaugeUpdate.selected;
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
@@ -191,6 +220,8 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     Options_SetFrame(menuData->saveOptions, menuData->options.messageBoxStyle);
     Sound_SetPlaybackMode(menuData->options.soundMode);
     Options_SetSystemButtonMode(NULL, menuData->options.buttonMode);
+
+    Options_SetBarGaugeUpdate(menuData->saveOptions, menuData->options.barGaugeUpdate);
 
     RenderControlFlags_SetCanABSpeedUpPrint(TRUE);
 
@@ -683,57 +714,82 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_BattleStyleLabel,
     OptionsMenu_Text_ButtonModeLabel,
     OptionsMenu_Text_MessageBoxStyleLabel,
+    OptionsMenu_Text_BarGaugeUpdateLabel,
     OptionsMenu_Text_CloseLabel,
 };
 
+static BOOL EntryIsOnPage(u8 entry, u8 page)
+{
+    return sEntryPage[entry] == page || sEntryPage[entry] == 0xFF;
+}
+
+static u8 PageRowIndex(u8 entry, u8 page)
+{
+    u8 row = 0;
+    for (u8 i = 0; i < entry; i++) {
+        if (EntryIsOnPage(i, page)) {
+            row++;
+        }
+    }
+    return row;
+}
+
 static void PrintTitleAndEntries(OptionsMenuData *menuData)
 {
-    u16 i; // Must forward-declare to match
     TextColor transparentBg = TEXT_COLOR(1, 2, 0);
-    TextColor whiteBg = TEXT_COLOR(1, 2, 15);
+    TextColor whiteBg       = TEXT_COLOR(1, 2, 15);
 
+    // Clear the title window before redrawing (fixes garbled text on page switch)
+    Window_FillTilemap(&menuData->windows.title, PIXEL_FILL(0));
+    Window_ClearTilemap(&menuData->windows.title);
+
+    // Clear the entries window before redrawing (fixes old page choices bleeding through)
+    Window_FillTilemap(&menuData->windows.entries, PIXEL_FILL(15));
+    Window_ClearTilemap(&menuData->windows.entries);
+
+    // Title
     String *string = String_Init(256, menuData->heapID);
     MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_Title, string);
-    Text_AddPrinterWithParamsAndColor(&menuData->windows.title,
-        FONT_SYSTEM,
-        string,
-        2,
-        2,
-        TEXT_SPEED_INSTANT,
-        transparentBg,
-        NULL);
+    Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, string, 2, 2, TEXT_SPEED_INSTANT, transparentBg, NULL);
 
-    for (i = 0; i < MAX_ENTRIES; i++) {
+    // Page Title
+    String *pageStr = String_Init(32, menuData->heapID);
+    MessageLoader_GetString(menuData->msgLoader, OptionsMenu_Text_PageIndicator_0 + menuData->currentPage, pageStr);
+    Text_AddPrinterWithParamsAndColor(&menuData->windows.title, FONT_SYSTEM, pageStr, /*x=*/ (MENU_TITLE_WIDTH * 8) - 64, /*y=*/ 2, TEXT_SPEED_NO_TRANSFER, TEXT_COLOR(1, 2, 0), NULL);
+    String_Free(pageStr);
+
+    // Only draw entries on the current page
+    for (u16 i = 0; i < MAX_ENTRIES; i++) {
+        if (!EntryIsOnPage(i, menuData->currentPage)) {
+            continue;
+        }
+        u8 row = PageRowIndex(i, menuData->currentPage);
+
         String_Clear(string);
         MessageLoader_GetString(menuData->msgLoader, sEntryLabels[i], string);
-        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
-            FONT_SYSTEM,
-            string,
-            4,
-            16 * i,
-            TEXT_SPEED_NO_TRANSFER,
-            whiteBg,
-            NULL);
+        Text_AddPrinterWithParamsAndColor(&menuData->windows.entries, FONT_SYSTEM, string, 4, SINGLE_ENTRY_HEIGHT * row, TEXT_SPEED_NO_TRANSFER, whiteBg, NULL);
+
+        PrintEntryChoicesAtRow(menuData, i, row);
     }
 
-    for (i = 0; i < MAX_ENTRIES; i++) {
-        PrintEntryChoices(menuData, i);
-    }
-
-    PrintEntryDescription(menuData, ENTRY_TEXT_SPEED, TRUE);
+    PrintEntryDescription(menuData, menuData->cursor, TRUE);
     Window_CopyToVRAM(&menuData->windows.title);
     Window_CopyToVRAM(&menuData->windows.entries);
     String_Free(string);
 }
 
 static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
-    3,
-    2,
-    2,
-    2,
-    3,
-    20,
-    0,
+    3,   // TEXT_SPEED
+    2,   // SOUND_MODE
+    2,   // BATTLE_SCENE
+    2,   // BATTLE_STYLE
+    3,   // BUTTON_MODE
+    20,  // MESSAGE_BOX_FRAME
+
+    // Page 2
+    2,   // BAR_GAUGE_UPDATE
+
+    0,   // CLOSE
 };
 
 static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
@@ -743,6 +799,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_BattleStyleShift,
     OptionsMenu_Text_ButtonModeNormal,
     OptionsMenu_Text_MessageBoxStyle_01,
+    OptionsMenu_Text_BarGaugeUpdateNormal,
     NULL,
 };
 
@@ -762,30 +819,45 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.soundMode.selected = menuData->options.soundMode;
     menuData->entries.buttonMode.selected = menuData->options.buttonMode;
     menuData->entries.messageBoxStyle.selected = menuData->options.messageBoxStyle;
+
+    menuData->entries.barGaugeUpdate.selected = menuData->options.barGaugeUpdate;
 }
 
-static const s8 sEntryXOffsets[] = { 0, 0, 0, 0, 0, 0, 0 };
+static const s8 sEntryXOffsets[] = {
+    0,   // TEXT_SPEED
+    0,   // SOUND_MODE
+    0,   // BATTLE_SCENE
+    0,   // BATTLE_STYLE
+    0,   // BUTTON_MODE
+    0,  // MESSAGE_BOX_FRAME
+
+    0,   // BAR_GAUGE_UPDATE
+    
+    0,   // CLOSE
+};
 
 static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
 {
-    TextColor darkGray, red, color;
-    u16 i;
-    u8 textSpeed;
-    s8 xOffset = 0;
+    PrintEntryChoicesAtRow(menuData, entry, PageRowIndex(entry, menuData->currentPage));
+}
 
-    darkGray = TEXT_COLOR(1, 2, 15);
-    red = TEXT_COLOR(3, 4, 15);
+static void PrintEntryChoicesAtRow(OptionsMenuData *menuData, u16 entry, u8 row)
+{
+    TextColor darkGray = TEXT_COLOR(1, 2, 15);
+    TextColor red      = TEXT_COLOR(3, 4, 15);
+    u16 yPixel = row * SINGLE_ENTRY_HEIGHT;
 
-    Window_FillRectWithColor(&menuData->windows.entries, PIXEL_FILL(15), CHOICES_X + sEntryXOffsets[entry], entry * SINGLE_ENTRY_HEIGHT, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
+    Window_FillRectWithColor(&menuData->windows.entries,
+        PIXEL_FILL(15),
+        CHOICES_X + sEntryXOffsets[entry],
+        yPixel, CHOICES_WIDTH, SINGLE_ENTRY_HEIGHT);
+
     if (entry == ENTRY_MESSAGE_BOX_FRAME) {
         Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
             FONT_SYSTEM,
             menuData->entries.asArray[entry].choices[menuData->entries.asArray[entry].selected],
-            48 + CHOICES_X,
-            entry * SINGLE_ENTRY_HEIGHT,
-            TEXT_SPEED_NO_TRANSFER,
-            red,
-            NULL);
+            48 + CHOICES_X, yPixel,
+            TEXT_SPEED_NO_TRANSFER, red, NULL);
         Window_CopyToVRAM(&menuData->windows.entries);
         menuData->redrawMessageBox = TRUE;
         return;
@@ -800,42 +872,26 @@ static void PrintEntryChoices(OptionsMenuData *menuData, u16 entry)
         PrintEntryDescription(menuData, entry, FALSE);
     }
 
-    xOffset = 0;
-    for (i = 0; i < menuData->entries.asArray[entry].numChoices; i++) {
-        if (i == menuData->entries.asArray[entry].selected) {
-            color = red;
-        } else {
-            color = darkGray;
-        }
-
-        if (i == menuData->entries.asArray[entry].numChoices - 1) {
-            textSpeed = TEXT_SPEED_NO_TRANSFER;
-        } else {
-            textSpeed = TEXT_SPEED_NO_TRANSFER;
-        }
+    s8 xOffset = 0;
+    for (u16 i = 0; i < menuData->entries.asArray[entry].numChoices; i++) {
+        TextColor color = (i == menuData->entries.asArray[entry].selected) ? red : darkGray;
 
         if (entry == ENTRY_BUTTON_MODE) {
             Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
-                xOffset + CHOICES_X,
-                entry * SINGLE_ENTRY_HEIGHT,
-                textSpeed,
-                color,
-                NULL);
+                xOffset + CHOICES_X, yPixel,
+                TEXT_SPEED_NO_TRANSFER, color, NULL);
             xOffset += Font_CalcStringWidth(FONT_SYSTEM, menuData->entries.asArray[entry].choices[i], 0) + 12;
         } else {
             Text_AddPrinterWithParamsAndColor(&menuData->windows.entries,
                 FONT_SYSTEM,
                 menuData->entries.asArray[entry].choices[i],
                 i * 48 + CHOICES_X + sEntryXOffsets[entry],
-                entry * SINGLE_ENTRY_HEIGHT,
-                textSpeed,
-                color,
-                NULL);
+                yPixel,
+                TEXT_SPEED_NO_TRANSFER, color, NULL);
         }
     }
-
     Window_CopyToVRAM(&menuData->windows.asArray[1]);
 }
 
@@ -883,10 +939,37 @@ static BOOL IsTextPrinterDone(const OptionsMenuData *menuData)
     return Text_IsPrinterActive(menuData->textPrinter) == FALSE;
 }
 
+static u8 FirstEntryOnPage(u8 page)
+{
+    for (u8 i = 0; i < MAX_ENTRIES; i++) {
+        if (EntryIsOnPage(i, page) && i != ENTRY_CLOSE) {
+            return i;
+        }
+    }
+    return ENTRY_CLOSE;
+}
+
 static void ProcessMainInput(OptionsMenuData *menuData)
 {
     OptionsMenuEntry *entry = &menuData->entries.asArray[menuData->cursor];
 
+    // ── L / R : switch page ───────────────────────────────────────────────────
+    if (JOY_NEW(PAD_BUTTON_L) && menuData->currentPage > 0) {
+        menuData->currentPage--;
+        menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        PrintTitleAndEntries(menuData);
+        Sound_PlayEffect(SE_CONFIRM_sseq_3);
+        return;
+    }
+    if (JOY_NEW(PAD_BUTTON_R) && menuData->currentPage < NUM_PAGES - 1) {
+        menuData->currentPage++;
+        menuData->cursor = FirstEntryOnPage(menuData->currentPage);
+        PrintTitleAndEntries(menuData);
+        Sound_PlayEffect(SE_CONFIRM_sseq_3);
+        return;
+    }
+
+    // ── Left / Right d-pad : change the selected value ────────────────────────
     if (menuData->cursor != ENTRY_CLOSE) {
         if (JOY_NEW(PAD_KEY_RIGHT)) {
             entry->selected = (entry->selected + 1) % entry->numChoices;
@@ -899,22 +982,29 @@ static void ProcessMainInput(OptionsMenuData *menuData)
         }
     }
 
-    if (JOY_NEW(PAD_KEY_UP)) {
-        menuData->cursor = (menuData->cursor + 7 - 1) % 7;
-        Bg_ScheduleScroll(menuData->bgConfig,
-            BG_LAYER_MAIN_0,
-            BG_OFFSET_UPDATE_SET_Y,
-            -(menuData->cursor * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
+    // ── Up / Down : move cursor among visible entries on current page ─────────
+    u8 visibleEntries[MAX_ENTRIES];
+    u8 numVisible = 0;
+    u8 cursorPosInPage = 0;
+    for (u8 i = 0; i < MAX_ENTRIES; i++) {
+        if (EntryIsOnPage(i, menuData->currentPage)) {
+            if (i == menuData->cursor) {
+                cursorPosInPage = numVisible;
+            }
+            visibleEntries[numVisible++] = i;
+        }
+    }
 
+    if (JOY_NEW(PAD_KEY_UP) && numVisible > 0) {
+        cursorPosInPage = (cursorPosInPage + numVisible - 1) % numVisible;
+        menuData->cursor = visibleEntries[cursorPosInPage];
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorPosInPage * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
-    } else if (JOY_NEW(PAD_KEY_DOWN)) {
-        menuData->cursor = (menuData->cursor + 1) % 7;
-        Bg_ScheduleScroll(menuData->bgConfig,
-            BG_LAYER_MAIN_0,
-            BG_OFFSET_UPDATE_SET_Y,
-            -(menuData->cursor * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
-
+    } else if (JOY_NEW(PAD_KEY_DOWN) && numVisible > 0) {
+        cursorPosInPage = (cursorPosInPage + 1) % numVisible;
+        menuData->cursor = visibleEntries[cursorPosInPage];
+        Bg_ScheduleScroll(menuData->bgConfig, BG_LAYER_MAIN_0, BG_OFFSET_UPDATE_SET_Y, -(cursorPosInPage * SINGLE_ENTRY_HEIGHT + FIRST_ENTRY_OFFSET));
         PrintEntryDescription(menuData, menuData->cursor, TRUE);
         Sound_PlayEffect(SE_CONFIRM_sseq_3);
     }
@@ -927,7 +1017,8 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.battleStyle != menuData->entries.battleStyle.selected
         || menuData->options.soundMode != menuData->entries.soundMode.selected
         || menuData->options.buttonMode != menuData->entries.buttonMode.selected
-        || menuData->options.messageBoxStyle != menuData->entries.messageBoxStyle.selected;
+        || menuData->options.messageBoxStyle != menuData->entries.messageBoxStyle.selected
+        || menuData->options.barGaugeUpdate != menuData->entries.barGaugeUpdate.selected;
 }
 
 static const WindowTemplate sConfirmationWindowTemplate = {
@@ -961,6 +1052,9 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_BattleStyleDescription,
     OptionsMenu_Text_ButtonModeDescription,
     OptionsMenu_Text_MessageBoxStyleDescription,
+
+    OptionsMenu_Text_BarGaugeUpdateDescription,
+
     OptionsMenu_Text_CloseDescription,
 };
 

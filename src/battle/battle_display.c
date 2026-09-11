@@ -56,6 +56,7 @@
 #include "character_sprite.h"
 #include "enums.h"
 #include "flags.h"
+#include "game_options.h"
 #include "heap.h"
 #include "item.h"
 #include "message.h"
@@ -67,6 +68,7 @@
 #include "pokemon_anim.h"
 #include "pokemon_sprite.h"
 #include "render_window.h"
+#include "save_player.h"
 #include "sound.h"
 #include "sound_playback.h"
 #include "sprite_system.h"
@@ -4898,16 +4900,27 @@ static void Task_UpdateHPGauge(SysTask *task, void *data)
     HealthBox *healthbox = data;
     int result;
 
+    Options *options = BattleSystem_GetOptions(healthbox->battleSys);
+
     switch (healthbox->state) {
     case 0:
         HealthBox_CalcHP(healthbox, healthbox->damage);
         healthbox->state++;
     case 1:
-        result = Healthbox_DrawHPBar(healthbox);
-
-        if (result == -1) {
+        if (Options_BarGaugeUpdate(options) == OPTIONS_BAR_GAUGE_INSTANT)
+        {
+            while(Healthbox_DrawHPBar(healthbox) != -1);
             healthbox->state++;
         }
+        else
+        {
+            result = Healthbox_DrawHPBar(healthbox);
+
+            if (result == -1) {
+                healthbox->state++;
+            }
+        }
+
         break;
     default:
         BattleController_EmitClearCommand(healthbox->battleSys, healthbox->battler, healthbox->command);
@@ -4922,6 +4935,8 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
     HealthBox *healthbox = data;
     int result;
 
+    Options *options = BattleSystem_GetOptions(healthbox->battleSys);
+
     switch (healthbox->state) {
     case 0:
         healthbox->expSoundTimer = 0;
@@ -4933,7 +4948,12 @@ static void Task_UpdateExpGauge(SysTask *task, void *data)
             healthbox->expSoundTimer++;
         }
 
-        result = Healthbox_DrawExpBar(healthbox);
+        if (Options_BarGaugeUpdate(options) == OPTIONS_BAR_GAUGE_INSTANT) {
+            while(Healthbox_DrawExpBar(healthbox) != -1);
+            result = -1;
+        } else {
+            result = Healthbox_DrawExpBar(healthbox);
+        }
 
         if (result == -1) {
             if (healthbox->expSoundTimer >= 8) {

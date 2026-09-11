@@ -51,4 +51,10 @@ enum OptionsFrame {
     OPTIONS_FRAME_20
 };
 
+// Entry Page 2
+enum BarGaugeUpdate {
+    OPTIONS_BAR_GAUGE_NORMAL = 0,
+    OPTIONS_BAR_GAUGE_INSTANT
+};
+
 #endif // POKEPLATINUM_CONSTANTS_GAME_OPTIONS_H

@@ -11,6 +11,9 @@ typedef struct OptionsMenu {
     u16 buttonMode : 2;
     u16 messageBoxStyle : 5;
     u16 : 1;
+
+    u16 barGaugeUpdate : 1;
+    u16 : 15;
 } OptionsMenu;
 
 BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state);

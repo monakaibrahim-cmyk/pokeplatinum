@@ -224,6 +224,33 @@
     {
       "id": "OptionsMenu_Text_CloseDescription",
       "en_US": "Return to the game."
+    },
+    {
+      "id": "OptionsMenu_Text_PageIndicator_0",
+      "en_US": "PAGE 1/2"
+    },
+    {
+      "id": "OptionsMenu_Text_PageIndicator_1",
+      "en_US": "PAGE 2/2"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateLabel",
+      "en_US": "HP/EXP GAUGE"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateNormal",
+      "en_US": "NORMAL"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateInstant",
+      "en_US": "INSTANT"
+    },
+    {
+      "id": "OptionsMenu_Text_BarGaugeUpdateDescription",
+      "en_US": [
+        "Choose between Normal Update or\n",
+        "Instant Update."
+      ]
     }
   ]
 }
