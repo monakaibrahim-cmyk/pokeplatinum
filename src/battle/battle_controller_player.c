@@ -1391,7 +1391,9 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
             break;
 
         case MON_COND_CHECK_STATE_POISON:
-            if ((battleCtx->battleMons[battler].status & MON_CONDITION_POISON) && battleCtx->battleMons[battler].curHP) {
+            if ((battleCtx->battleMons[battler].status & MON_CONDITION_POISON)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
                 battleCtx->hpCalcTemp = BattleSystem_Divide(battleCtx->battleMons[battler].maxHP * -1, 8);
 
@@ -1403,7 +1405,9 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
             break;
 
         case MON_COND_CHECK_STATE_TOXIC:
-            if ((battleCtx->battleMons[battler].status & MON_CONDITION_TOXIC) && battleCtx->battleMons[battler].curHP) {
+            if ((battleCtx->battleMons[battler].status & MON_CONDITION_TOXIC)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
                 battleCtx->hpCalcTemp = BattleSystem_Divide(battleCtx->battleMons[battler].maxHP, 16);
 
@@ -1423,7 +1427,9 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
             break;
 
         case MON_COND_CHECK_STATE_BURN:
-            if ((battleCtx->battleMons[battler].status & MON_CONDITION_BURN) && battleCtx->battleMons[battler].curHP) {
+            if ((battleCtx->battleMons[battler].status & MON_CONDITION_BURN)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
 
                 PrepareSubroutineSequence(battleCtx, subscript_burn_damage);
@@ -2619,6 +2625,17 @@ static BOOL BattleControllerPlayer_CheckStatusDisruption(BattleSystem *battleSys
             battleCtx->statusCheckState++;
 
             if (ATTACKING_MON.statusVolatile & VOLATILE_CONDITION_CONFUSION) {
+                if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+                    && BattleSystem_GetBattlerSide(battleSys, battleCtx->attacker) == BATTLER_US) {
+                    ATTACKING_MON.statusVolatile &= ~VOLATILE_CONDITION_CONFUSION;
+                    LOAD_SUBSEQ(subscript_snap_out_of_confusion);
+                    battleCtx->commandNext = battleCtx->command;
+                    battleCtx->command = BATTLE_CONTROL_EXEC_SCRIPT;
+
+                    result = CHECK_STATUS_GO_TO_SCRIPT;
+                    break;
+                }
+
                 ATTACKING_MON.statusVolatile -= (1 << VOLATILE_CONDITION_CONFUSION_SHIFT);
 
                 if (ATTACKING_MON.statusVolatile & VOLATILE_CONDITION_CONFUSION) {

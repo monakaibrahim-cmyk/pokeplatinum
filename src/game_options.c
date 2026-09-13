@@ -35,11 +35,14 @@ void Options_Init(Options *options)
 
     options->barGaugeUpdate = OPTIONS_BAR_GAUGE_INSTANT;
     options->frameRate = OPTIONS_FRAMERATE_CAPPED;
+
     options->disobedient = OPTIONS_DISOBEDIENT_ON;
     options->easyCatch = OPTIONS_EASYCATCH_OFF;
     options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
     options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
     options->expRate = OPTIONS_EXPRATE_NORMAL;
+
+    options->invincibleMode = OPTIONS_INVINCIBLE_MODE_OFF;
 }
 
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode)
@@ -203,4 +206,14 @@ int Options_ExpRate(const Options *options)
 void Options_SetExpRate(Options *options, enum OptionsExpRate rate)
 {
     options->expRate = rate;
+}
+
+int Options_InvincibleMode(const Options *options)
+{
+    return options->invincibleMode;
+}
+
+void Options_SetInvincibleMode(Options *options, enum OptionsInvincibleMode mode)
+{
+    options->invincibleMode = mode;
 }

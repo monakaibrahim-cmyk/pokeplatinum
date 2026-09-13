@@ -1709,6 +1709,14 @@ static BOOL BtlCmd_UpdateHealthBarValue(BattleSystem *battleSys, BattleContext *
         battleCtx->totalDamage[battler] += (battleCtx->hitDamage * -1);
     }
 
+    if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        if (battleCtx->hpCalcTemp < 0) {
+            battleCtx->hpCalcTemp = 0;
+        }
+        battleCtx->battleMons[battler].curHP = battleCtx->battleMons[battler].maxHP;
+    }
+
     // Cap the battler's new HP value to their max HP (in case the temp value is positive).
     battleCtx->battleMons[battler].curHP += battleCtx->hpCalcTemp;
     if (battleCtx->battleMons[battler].curHP < 0) {
@@ -1738,6 +1746,13 @@ static BOOL BtlCmd_UpdateHealthBar(BattleSystem *battleSys, BattleContext *battl
     int inBattler = BattleScript_Read(battleCtx);
     int battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
 
+    if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US
+        && battleCtx->hpCalcTemp < 0) {
+        battleCtx->hpCalcTemp = 0;
+    }
+
+
     BattleController_EmitUpdateHPGauge(battleSys, battleCtx, battler);
 
     return FALSE;
@@ -1766,6 +1781,12 @@ static BOOL BtlCmd_TryFaintMon(BattleSystem *battleSys, BattleContext *battleCtx
     int inBattler = BattleScript_Read(battleCtx);
 
     int battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
+
+    if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        return FALSE;
+    }
+    
     if (battleCtx->battleMons[battler].curHP == 0) {
         battleCtx->faintedMon = battler;
         battleCtx->battleStatusMask |= (FlagIndex(battler) << SYSCTL_MON_FAINTED_SHIFT);
@@ -3142,6 +3163,21 @@ static BOOL BtlCmd_ToggleVanish(BattleSystem *battleSys, BattleContext *battleCt
  * @param battleCtx
  * @return FALSE
  */
+static inline BOOL Battler_CheckAbilityWithInvincible(BattleSystem *battleSys, BattleContext *battleCtx, int battler, int ability)
+{
+    if (Battler_Ability(battleCtx, battler) == ability) {
+        return TRUE;
+    }
+
+    if (ability == ABILITY_MAGIC_GUARD
+        && Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static BOOL BtlCmd_CheckAbility(BattleSystem *battleSys, BattleContext *battleCtx)
 {
     BattleScript_Iter(battleCtx, 1);
@@ -3156,12 +3192,12 @@ static BOOL BtlCmd_CheckAbility(BattleSystem *battleSys, BattleContext *battleCt
 
         for (battler = 0; battler < maxBattlers; battler++) {
             if (op == CHECK_HAVE) {
-                if (Battler_Ability(battleCtx, battler) == ability) {
+                if (Battler_CheckAbilityWithInvincible(battleSys, battleCtx, battler, ability)) {
                     BattleScript_Iter(battleCtx, jump);
                     battleCtx->abilityMon = battler;
                     break;
                 }
-            } else if (Battler_Ability(battleCtx, battler) == ability) {
+            } else if (Battler_CheckAbilityWithInvincible(battleSys, battleCtx, battler, ability)) {
                 break;
             }
         }
@@ -3169,11 +3205,11 @@ static BOOL BtlCmd_CheckAbility(BattleSystem *battleSys, BattleContext *battleCt
         battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
 
         if (op == CHECK_HAVE) {
-            if (Battler_Ability(battleCtx, battler) == ability) {
+            if (Battler_CheckAbilityWithInvincible(battleSys, battleCtx, battler, ability)) {
                 BattleScript_Iter(battleCtx, jump);
                 battleCtx->abilityMon = battler;
             }
-        } else if (Battler_Ability(battleCtx, battler) != ability) {
+        } else if (!Battler_CheckAbilityWithInvincible(battleSys, battleCtx, battler, ability)) {
             BattleScript_Iter(battleCtx, jump);
             battleCtx->abilityMon = battler;
         }
@@ -7670,6 +7706,21 @@ static BOOL BtlCmd_CheckToxicSpikes(BattleSystem *battleSys, BattleContext *batt
  * @param battleCtx
  * @return FALSE
  */
+static inline BOOL Battler_CheckIgnorableAbilityWithInvincible(BattleSystem *battleSys, BattleContext *battleCtx, int attacker, int defender, int ability)
+{
+    if (Battler_IgnorableAbility(battleCtx, attacker, defender, ability) == TRUE) {
+        return TRUE;
+    }
+
+    if (ability == ABILITY_MAGIC_GUARD
+        && Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_GetBattlerSide(battleSys, defender) == BATTLER_US) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static BOOL BtlCmd_CheckIgnorableAbility(BattleSystem *battleSys, BattleContext *battleCtx)
 {
     BattleScript_Iter(battleCtx, 1);
@@ -7686,13 +7737,13 @@ static BOOL BtlCmd_CheckIgnorableAbility(BattleSystem *battleSys, BattleContext 
             battler = battleCtx->monSpeedOrder[i];
 
             if (op == CHECK_HAVE) {
-                if (Battler_IgnorableAbility(battleCtx, battleCtx->attacker, battler, ability) == TRUE
+                if (Battler_CheckIgnorableAbilityWithInvincible(battleSys, battleCtx, battleCtx->attacker, battler, ability) == TRUE
                     && battleCtx->battleMons[battler].curHP) {
                     BattleScript_Iter(battleCtx, jump);
                     battleCtx->abilityMon = battler;
                     break;
                 }
-            } else if (Battler_IgnorableAbility(battleCtx, battleCtx->attacker, battler, ability) == FALSE
+            } else if (Battler_CheckIgnorableAbilityWithInvincible(battleSys, battleCtx, battleCtx->attacker, battler, ability) == FALSE
                 || battleCtx->battleMons[battler].curHP == 0) {
                 BattleScript_Iter(battleCtx, jump);
                 battleCtx->abilityMon = battler;
@@ -7703,12 +7754,12 @@ static BOOL BtlCmd_CheckIgnorableAbility(BattleSystem *battleSys, BattleContext 
         battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
 
         if (op == CHECK_HAVE) {
-            if (Battler_IgnorableAbility(battleCtx, battleCtx->attacker, battler, ability) == TRUE
+            if (Battler_CheckIgnorableAbilityWithInvincible(battleSys, battleCtx, battleCtx->attacker, battler, ability) == TRUE
                 && battleCtx->battleMons[battler].curHP) {
                 BattleScript_Iter(battleCtx, jump);
                 battleCtx->abilityMon = battler;
             }
-        } else if (Battler_IgnorableAbility(battleCtx, battleCtx->attacker, battler, ability) == FALSE
+        } else if (Battler_CheckIgnorableAbilityWithInvincible(battleSys, battleCtx, battleCtx->attacker, battler, ability) == FALSE
             || battleCtx->battleMons[battler].curHP == 0) {
             BattleScript_Iter(battleCtx, jump);
             battleCtx->abilityMon = battler;

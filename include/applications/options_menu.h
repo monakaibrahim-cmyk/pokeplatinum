@@ -24,6 +24,10 @@ typedef struct OptionsMenu {
     u16 evIvMode : 1;
     u16 expRate : 4;
     u16 : 5;
+
+    // Page 4
+    u16 invincibleMode : 1;
+    u16 : 15;
 } OptionsMenu;
 
 BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state);

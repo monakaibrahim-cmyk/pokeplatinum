@@ -26,6 +26,10 @@ typedef struct Options {
     u16 evIvMode : 1;
     u16 expRate : 4;
     u16 : 5;
+
+    // Page 4
+    u16 invincibleMode : 1;
+    u16 : 15;
 } Options;
 
 Options *Options_New(enum HeapID heapID);
@@ -59,5 +63,7 @@ int Options_ShinyRate(const Options *options);
 void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate);
 int Options_ExpRate(const Options *options);
 void Options_SetExpRate(Options *options, enum OptionsExpRate rate);
+int Options_InvincibleMode(const Options *options);
+void Options_SetInvincibleMode(Options *options, enum OptionsInvincibleMode mode);
 
 #endif // POKEPLATINUM_GAME_OPTIONS_H

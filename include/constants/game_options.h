@@ -88,4 +88,9 @@ enum OptionsExpRate {
     OPTIONS_EXPRATE_HIGH
 };
 
+enum OptionsInvincibleMode {
+    OPTIONS_INVINCIBLE_MODE_OFF = 0,
+    OPTIONS_INVINCIBLE_MODE_ON
+};
+
 #endif // POKEPLATINUM_CONSTANTS_GAME_OPTIONS_H

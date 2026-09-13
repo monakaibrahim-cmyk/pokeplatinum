@@ -227,11 +227,15 @@
     },
     {
       "id": "OptionsMenu_Text_Title_1",
-      "en_US": "QoL 1 / 2"
+      "en_US": "Quality of Life"
     },
     {
       "id": "OptionsMenu_Text_Title_2",
-      "en_US": "QoL 2 / 2"
+      "en_US": "Cheat 1 / 2"
+    },
+    {
+      "id": "OptionsMenu_Text_Title_3",
+      "en_US": "Cheat 2 / 2"
     },
     {
       "id": "OptionsMenu_Text_BarGaugeUpdateLabel",
@@ -370,6 +374,22 @@
         "Choose Exp Rate.\n",
         "Normal, Mid: x4, High: x8"
       ]
+    },
+    {
+      "id": "OptionsMenu_Text_InvincibleLabel",
+      "en_US": "INVINCIBLE MODE"
+    },
+    {
+      "id": "OptionsMenu_Text_InvincibleOff",
+      "en_US": "OFF"
+    },
+    {
+      "id": "OptionsMenu_Text_InvincibleOn",
+      "en_US": "ON"
+    },
+    {
+      "id": "OptionsMenu_Text_InvincibleDescription",
+      "en_US": "You will not recieve any Damage."
     }
   ]
 }
