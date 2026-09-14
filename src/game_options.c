@@ -43,6 +43,7 @@ void Options_Init(Options *options)
     options->expRate = OPTIONS_EXPRATE_NORMAL;
 
     options->invincibleMode = OPTIONS_INVINCIBLE_MODE_OFF;
+    options->unlimitedPP = OPTIONS_UNLIMITED_PP_OFF;
 }
 
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode)
@@ -216,4 +217,14 @@ int Options_InvincibleMode(const Options *options)
 void Options_SetInvincibleMode(Options *options, enum OptionsInvincibleMode mode)
 {
     options->invincibleMode = mode;
+}
+
+int Options_UnlimitedPP(const Options *options)
+{
+    return options->unlimitedPP;
+}
+
+void Options_SetUnlimitedPP(Options *options, enum OptionsUnlimitedPP mode)
+{
+    options->unlimitedPP = mode;
 }

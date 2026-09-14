@@ -390,6 +390,22 @@
     {
       "id": "OptionsMenu_Text_InvincibleDescription",
       "en_US": "You will not recieve any Damage."
+    },
+    {
+      "id": "OptionsMenu_Text_UnlimitedPPLabel",
+      "en_US": "UNLIMITED PP"
+    },
+    {
+      "id": "OptionsMenu_Text_UnlimitedPPOff",
+      "en_US": "OFF"
+    },
+    {
+      "id": "OptionsMenu_Text_UnlimitedPPOn",
+      "en_US": "ON"
+    },
+    {
+      "id": "OptionsMenu_Text_UnlimitedPPDescription",
+      "en_US": "Moves will not consume PP in battle."
     }
   ]
 }

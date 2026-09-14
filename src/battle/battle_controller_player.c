@@ -1392,7 +1392,7 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
 
         case MON_COND_CHECK_STATE_POISON:
             if ((battleCtx->battleMons[battler].status & MON_CONDITION_POISON)
-                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_IsPlayerBattler(battleSys, battler))
                 && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
                 battleCtx->hpCalcTemp = BattleSystem_Divide(battleCtx->battleMons[battler].maxHP * -1, 8);
@@ -1406,7 +1406,7 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
 
         case MON_COND_CHECK_STATE_TOXIC:
             if ((battleCtx->battleMons[battler].status & MON_CONDITION_TOXIC)
-                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_IsPlayerBattler(battleSys, battler))
                 && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
                 battleCtx->hpCalcTemp = BattleSystem_Divide(battleCtx->battleMons[battler].maxHP, 16);
@@ -1428,7 +1428,7 @@ static void BattleControllerPlayer_CheckMonConditions(BattleSystem *battleSys, B
 
         case MON_COND_CHECK_STATE_BURN:
             if ((battleCtx->battleMons[battler].status & MON_CONDITION_BURN)
-                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US)
+                && !(Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON && BattleSystem_IsPlayerBattler(battleSys, battler))
                 && battleCtx->battleMons[battler].curHP) {
                 battleCtx->msgBattlerTemp = battler;
 
@@ -2283,14 +2283,19 @@ static BOOL BattleControllerPlayer_DecrementPP(BattleSystem *battleSys, BattleCo
     if (ATTACKER_TURN_FLAGS.ppDecremented == FALSE && ATTACKER_TURN_FLAGS.struggling == FALSE) {
         ATTACKER_TURN_FLAGS.ppDecremented = 1;
 
-        if (ATTACKING_MON.ppCur[moveSlot] && moveSlot < LEARNED_MOVES_MAX) {
-            if (ATTACKING_MON.ppCur[moveSlot] > ppCost) {
-                ATTACKING_MON.ppCur[moveSlot] -= ppCost;
-            } else {
-                ATTACKING_MON.ppCur[moveSlot] = 0;
-            }
+        BOOL isUnlimitedPP = (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) == OPTIONS_UNLIMITED_PP_ON
+            && BattleSystem_IsPlayerBattler(battleSys, battleCtx->attacker));
 
-            BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->attacker);
+        if ((ATTACKING_MON.ppCur[moveSlot] || isUnlimitedPP) && moveSlot < LEARNED_MOVES_MAX) {
+            if (!isUnlimitedPP) {
+                if (ATTACKING_MON.ppCur[moveSlot] > ppCost) {
+                    ATTACKING_MON.ppCur[moveSlot] -= ppCost;
+                } else {
+                    ATTACKING_MON.ppCur[moveSlot] = 0;
+                }
+
+                BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->attacker);
+            }
         } else {
             battleCtx->moveStatusFlags |= MOVE_STATUS_NO_PP;
         }
@@ -2300,7 +2305,10 @@ static BOOL BattleControllerPlayer_DecrementPP(BattleSystem *battleSys, BattleCo
         && (ATTACKING_MON.statusVolatile & VOLATILE_CONDITION_THRASH) == FALSE
         && MON_IS_UPROARING(battleCtx->attacker) == FALSE
         && moveSlot < LEARNED_MOVES_MAX) {
-        battleCtx->moveStatusFlags |= MOVE_STATUS_NO_PP;
+        if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) != OPTIONS_UNLIMITED_PP_ON
+            || !BattleSystem_IsPlayerBattler(battleSys, battleCtx->attacker)) {
+            battleCtx->moveStatusFlags |= MOVE_STATUS_NO_PP;
+        }
     }
 
     return FALSE;
@@ -2626,7 +2634,7 @@ static BOOL BattleControllerPlayer_CheckStatusDisruption(BattleSystem *battleSys
 
             if (ATTACKING_MON.statusVolatile & VOLATILE_CONDITION_CONFUSION) {
                 if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-                    && BattleSystem_GetBattlerSide(battleSys, battleCtx->attacker) == BATTLER_US) {
+                    && BattleSystem_IsPlayerBattler(battleSys, battleCtx->attacker)) {
                     ATTACKING_MON.statusVolatile &= ~VOLATILE_CONDITION_CONFUSION;
                     LOAD_SUBSEQ(subscript_snap_out_of_confusion);
                     battleCtx->commandNext = battleCtx->command;
@@ -3101,7 +3109,7 @@ static BOOL BattleControllerPlayer_MoveStolen(BattleSystem *battleSys, BattleCon
         battleCtx->commandNext = battleCtx->command;
         battleCtx->command = BATTLE_CONTROL_EXEC_SCRIPT;
 
-        BattleSystem_DecPPForPressure(battleCtx, battleCtx->defender, battleCtx->attacker);
+        BattleSystem_DecPPForPressure(battleSys, battleCtx, battleCtx->defender, battleCtx->attacker);
         return TRUE;
     }
 
@@ -3125,7 +3133,7 @@ static BOOL BattleControllerPlayer_MoveStolen(BattleSystem *battleSys, BattleCon
             battleCtx->commandNext = battleCtx->command;
             battleCtx->command = BATTLE_CONTROL_EXEC_SCRIPT;
 
-            BattleSystem_DecPPForPressure(battleCtx, battler, battleCtx->attacker);
+            BattleSystem_DecPPForPressure(battleSys, battleCtx, battler, battleCtx->attacker);
             return TRUE;
         }
     }
@@ -3910,8 +3918,18 @@ static void BattleControllerPlayer_LoopSpreadMoves(BattleSystem *battleSys, Batt
 static void BattleControllerPlayer_FaintAfterSelfdestruct(BattleSystem *battleSys, BattleContext *battleCtx)
 {
     if (battleCtx->battleStatusMask & SYSCTL_MON_SELFDESTRUCTED) {
-        battleCtx->faintedMon = LowestBit((battleCtx->battleStatusMask & SYSCTL_MON_SELFDESTRUCTED) >> SYSCTL_MON_SELFDESTRUCTED_SHIFT);
+        int faintedMon = LowestBit((battleCtx->battleStatusMask & SYSCTL_MON_SELFDESTRUCTED) >> SYSCTL_MON_SELFDESTRUCTED_SHIFT);
         battleCtx->battleStatusMask &= ~SYSCTL_MON_SELFDESTRUCTED;
+
+        if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+            && BattleSystem_IsPlayerBattler(battleSys, faintedMon)) {
+            battleCtx->battleMons[faintedMon].curHP = battleCtx->battleMons[faintedMon].maxHP;
+            BattleMon_CopyToParty(battleSys, battleCtx, faintedMon);
+            battleCtx->command = BATTLE_CONTROL_TRIGGER_AFTER_HIT_EFFECTS;
+            return;
+        }
+
+        battleCtx->faintedMon = faintedMon;
 
         LOAD_SUBSEQ(subscript_after_selfdestruct);
         battleCtx->command = BATTLE_CONTROL_EXEC_SCRIPT;

@@ -93,4 +93,9 @@ enum OptionsInvincibleMode {
     OPTIONS_INVINCIBLE_MODE_ON
 };
 
+enum OptionsUnlimitedPP {
+    OPTIONS_UNLIMITED_PP_OFF = 0,
+    OPTIONS_UNLIMITED_PP_ON
+};
+
 #endif // POKEPLATINUM_CONSTANTS_GAME_OPTIONS_H

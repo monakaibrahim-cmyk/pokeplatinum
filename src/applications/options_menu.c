@@ -75,6 +75,7 @@ enum OptionsMenuEntryID {
     ENTRY_EXP_RATE,
 
     ENTRY_INVINCIBLE_MODE,
+    ENTRY_UNLIMITED_PP,
 
     ENTRY_CLOSE,
 
@@ -101,6 +102,7 @@ static const u8 sEntryPage[MAX_ENTRIES] = {
     [ENTRY_EXP_RATE]                        = 2,
 
     [ENTRY_INVINCIBLE_MODE]                 = 3,
+    [ENTRY_UNLIMITED_PP]                    = 3,
 
     [ENTRY_CLOSE]                           = 0xFF,
 };
@@ -159,6 +161,7 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry expRate;
 
             OptionsMenuEntry invincibleMode;
+            OptionsMenuEntry unlimitedPP;
 
             OptionsMenuEntry close;
         };
@@ -229,6 +232,7 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     menuData->options.expRate = Options_ExpRate(options);
 
     menuData->options.invincibleMode = Options_InvincibleMode(options);
+    menuData->options.unlimitedPP = Options_UnlimitedPP(options);
 
     menuData->heapID = HEAP_ID_OPTIONS_MENU;
     menuData->saveOptions = options;
@@ -260,6 +264,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
         menuData->options.expRate = menuData->entries.expRate.selected;
 
         menuData->options.invincibleMode = menuData->entries.invincibleMode.selected;
+        menuData->options.unlimitedPP = menuData->entries.unlimitedPP.selected;
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
@@ -279,6 +284,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     Options_SetExpRate(menuData->saveOptions, menuData->options.expRate);
 
     Options_SetInvincibleMode(menuData->saveOptions, menuData->options.invincibleMode);
+    Options_SetUnlimitedPP(menuData->saveOptions, menuData->options.unlimitedPP);
 
     Sound_SetPlaybackMode(menuData->options.soundMode);
     Options_SetSystemButtonMode(NULL, menuData->options.buttonMode);
@@ -785,6 +791,7 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_ExpRateLabel,
 
     OptionsMenu_Text_InvincibleLabel,
+    OptionsMenu_Text_UnlimitedPPLabel,
 
     OptionsMenu_Text_CloseLabel,
 };
@@ -872,6 +879,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     3, // EXP_RATE
 
     2, // INVINCIBLE_MODE
+    2, // UNLIMITED_PP
     
     0, // CLOSE
 };
@@ -894,6 +902,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_ExpRateNormal,
 
     OptionsMenu_Text_InvincibleOff,
+    OptionsMenu_Text_UnlimitedPPOff,
 
     NULL,
 };
@@ -925,6 +934,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.expRate.selected = menuData->options.expRate;
 
     menuData->entries.invincibleMode.selected = menuData->options.invincibleMode;
+    menuData->entries.unlimitedPP.selected = menuData->options.unlimitedPP;
 }
 
 static const s8 sEntryXOffsets[MAX_ENTRIES] = {
@@ -945,6 +955,7 @@ static const s8 sEntryXOffsets[MAX_ENTRIES] = {
     0, // EXP_RATE
 
     0, // INVINCIBLE_MODE
+    0, // UNLIMITED_PP
     
     0, // CLOSE
 };
@@ -1151,7 +1162,8 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.evIvMode != menuData->entries.evIvMode.selected
         || menuData->options.shinyRate != menuData->entries.shinyRate.selected
         || menuData->options.expRate != menuData->entries.expRate.selected
-        || menuData->options.invincibleMode != menuData->entries.invincibleMode.selected;
+        || menuData->options.invincibleMode != menuData->entries.invincibleMode.selected
+        || menuData->options.unlimitedPP != menuData->entries.unlimitedPP.selected;
 }
 
 static const WindowTemplate sConfirmationWindowTemplate = {
@@ -1196,6 +1208,7 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_ExpRateDescription,
 
     OptionsMenu_Text_InvincibleDescription,
+    OptionsMenu_Text_UnlimitedPPDescription,
 
     OptionsMenu_Text_CloseDescription,
 };

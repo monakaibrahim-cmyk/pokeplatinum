@@ -1710,7 +1710,7 @@ static BOOL BtlCmd_UpdateHealthBarValue(BattleSystem *battleSys, BattleContext *
     }
 
     if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        && BattleSystem_IsPlayerBattler(battleSys, battler)) {
         if (battleCtx->hpCalcTemp < 0) {
             battleCtx->hpCalcTemp = 0;
         }
@@ -1747,7 +1747,7 @@ static BOOL BtlCmd_UpdateHealthBar(BattleSystem *battleSys, BattleContext *battl
     int battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
 
     if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US
+        && BattleSystem_IsPlayerBattler(battleSys, battler)
         && battleCtx->hpCalcTemp < 0) {
         battleCtx->hpCalcTemp = 0;
     }
@@ -1783,7 +1783,7 @@ static BOOL BtlCmd_TryFaintMon(BattleSystem *battleSys, BattleContext *battleCtx
     int battler = BattleScript_Battler(battleSys, battleCtx, inBattler);
 
     if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        && BattleSystem_IsPlayerBattler(battleSys, battler)) {
         return FALSE;
     }
     
@@ -3171,7 +3171,7 @@ static inline BOOL Battler_CheckAbilityWithInvincible(BattleSystem *battleSys, B
 
     if (ability == ABILITY_MAGIC_GUARD
         && Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-        && BattleSystem_GetBattlerSide(battleSys, battler) == BATTLER_US) {
+        && BattleSystem_IsPlayerBattler(battleSys, battler)) {
         return TRUE;
     }
 
@@ -4679,7 +4679,7 @@ static BOOL BtlCmd_Counter(BattleSystem *battleSys, BattleContext *battleCtx)
             }
         }
 
-        BattleSystem_DecPPForPressure(battleCtx, battleCtx->attacker, battleCtx->defender);
+        BattleSystem_DecPPForPressure(battleSys, battleCtx, battleCtx->attacker, battleCtx->defender);
     } else {
         ATTACKER_SELF_TURN_FLAGS.skipPressureCheck = TRUE;
         battleCtx->moveStatusFlags |= MOVE_STATUS_FAILED;
@@ -4732,7 +4732,7 @@ static BOOL BtlCmd_MirrorCoat(BattleSystem *battleSys, BattleContext *battleCtx)
             }
         }
 
-        BattleSystem_DecPPForPressure(battleCtx, battleCtx->attacker, battleCtx->defender);
+        BattleSystem_DecPPForPressure(battleSys, battleCtx, battleCtx->attacker, battleCtx->defender);
     } else {
         ATTACKER_SELF_TURN_FLAGS.skipPressureCheck = TRUE;
         battleCtx->moveStatusFlags |= MOVE_STATUS_FAILED;
@@ -5040,9 +5040,11 @@ static BOOL BtlCmd_TrySpite(BattleSystem *battleSys, BattleContext *battleCtx)
 
             battleCtx->msgMoveTemp = DEFENDER_LAST_MOVE;
             battleCtx->msgTemp = dec;
-            DEFENDING_MON.ppCur[moveSlot] -= dec;
-
-            BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->defender);
+            if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) != OPTIONS_UNLIMITED_PP_ON
+                || !BattleSystem_IsPlayerBattler(battleSys, battleCtx->defender)) {
+                DEFENDING_MON.ppCur[moveSlot] -= dec;
+                BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->defender);
+            }
         }
     } else {
         BattleScript_Iter(battleCtx, jumpOnFail);
@@ -6787,10 +6789,12 @@ static BOOL BtlCmd_TryGrudge(BattleSystem *battleSys, BattleContext *battleCtx)
         && ATTACKING_MON.curHP
         && battleCtx->moveTemp != MOVE_STRUGGLE) {
         int moveSlot = ATTACKER_MOVE_SLOT;
-        ATTACKING_MON.ppCur[moveSlot] = 0;
+        if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) != OPTIONS_UNLIMITED_PP_ON
+            || !BattleSystem_IsPlayerBattler(battleSys, battleCtx->attacker)) {
+            ATTACKING_MON.ppCur[moveSlot] = 0;
+            BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->attacker);
+        }
         battleCtx->msgMoveTemp = ATTACKING_MON.moves[moveSlot];
-
-        BattleMon_CopyToParty(battleSys, battleCtx, battleCtx->attacker);
     } else {
         BattleScript_Iter(battleCtx, jumpOnFail);
     }
@@ -6950,12 +6954,17 @@ static BOOL BtlCmd_TryPursuit(BattleSystem *battleSys, BattleContext *battleCtx)
 
                 if (MOVE_DATA(move).effect == BATTLE_EFFECT_HIT_BEFORE_SWITCH
                     && battleCtx->battleMons[i].ppCur[moveSlot]) {
-                    battleCtx->battleMons[i].ppCur[moveSlot]--;
-
-                    // CompareVarToValue the switching battler has Pressure, apply it to the battler using Pursuit.
-                    if (Battler_Ability(battleCtx, battleCtx->switchedMon) == ABILITY_PRESSURE
-                        && battleCtx->battleMons[i].ppCur[moveSlot]) {
+                    if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) != OPTIONS_UNLIMITED_PP_ON
+                        || !BattleSystem_IsPlayerBattler(battleSys, i)) {
                         battleCtx->battleMons[i].ppCur[moveSlot]--;
+
+                        // CompareVarToValue the switching battler has Pressure, apply it to the battler using Pursuit.
+                        if (Battler_Ability(battleCtx, battleCtx->switchedMon) == ABILITY_PRESSURE
+                            && battleCtx->battleMons[i].ppCur[moveSlot]) {
+                            battleCtx->battleMons[i].ppCur[moveSlot]--;
+                        }
+
+                        BattleMon_CopyToParty(battleSys, battleCtx, i);
                     }
 
                     BattleSystem_SetupLoop(battleSys, battleCtx);
@@ -6965,8 +6974,6 @@ static BOOL BtlCmd_TryPursuit(BattleSystem *battleSys, BattleContext *battleCtx)
                     battleCtx->moveCur = move;
                     battleCtx->movePrevByBattler[i] = move;
                     battleCtx->battlerActions[i][BATTLE_ACTION_PICK_COMMAND] = BATTLE_CONTROL_MOVE_END;
-
-                    BattleMon_CopyToParty(battleSys, battleCtx, i);
                     break;
                 }
             }
@@ -7213,7 +7220,7 @@ static BOOL BtlCmd_TryMetalBurst(BattleSystem *battleSys, BattleContext *battleC
             }
         }
 
-        BattleSystem_DecPPForPressure(battleCtx, battleCtx->attacker, battleCtx->defender);
+        BattleSystem_DecPPForPressure(battleSys, battleCtx, battleCtx->attacker, battleCtx->defender);
     } else {
         BattleScript_Iter(battleCtx, jumpOnFail);
     }
@@ -7714,7 +7721,7 @@ static inline BOOL Battler_CheckIgnorableAbilityWithInvincible(BattleSystem *bat
 
     if (ability == ABILITY_MAGIC_GUARD
         && Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
-        && BattleSystem_GetBattlerSide(battleSys, defender) == BATTLER_US) {
+        && BattleSystem_IsPlayerBattler(battleSys, defender)) {
         return TRUE;
     }
 

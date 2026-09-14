@@ -362,6 +362,28 @@ u8 BattleSystem_GetBattlerSide(BattleSystem *battleSys, int battler)
     return BattlerData_GetBattlerType(battleSys->battlers[battler]) & 1;
 }
 
+BOOL BattleSystem_IsPlayerBattler(BattleSystem *battleSys, int battler)
+{
+    if (battler < 0 || battler >= battleSys->maxBattlers) {
+        return FALSE;
+    }
+
+    if (BattleSystem_GetBattleStatusMask(battleSys) & BATTLE_STATUS_RECORDING) {
+        return FALSE;
+    }
+
+    if (BattleSystem_GetBattlerSide(battleSys, battler) != BATTLER_US) {
+        return FALSE;
+    }
+
+    BattlerData *battlerData = BattleSystem_GetBattlerData(battleSys, battler);
+    if (battlerData == NULL) {
+        return FALSE;
+    }
+
+    return BattlerData_GetBootState(battlerData) == BATTLER_BOOT_STATE_NORMAL;
+}
+
 PaletteAnimator *BattleSystem_GetPaletteAnimator(BattleSystem *battleSys)
 {
     return battleSys->paletteAnimator;

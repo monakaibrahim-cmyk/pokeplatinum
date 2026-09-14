@@ -1399,11 +1399,13 @@ BOOL BattleSystem_TriggerHeldItemOnPivotMove(BattleSystem *battleSys, BattleCont
  * @brief Decrement additional PP from the attacker's selected move if its
  * target has the Pressure ability.
  *
+ * @param battleSys
  * @param battleCtx
  * @param attacker
  * @param defender
  */
 void BattleSystem_DecPPForPressure(BattleContext *battleCtx, int attacker, int defender);
+void BattleSystem_DecPPForPressure(BattleSystem *battleSys, BattleContext *battleCtx, int attacker, int defender);
 
 /**
  * @brief Check if the recording for a battle has finished playing.

@@ -141,6 +141,7 @@ u32 BattleSystem_GetTrainerGender(BattleSystem *battleSys, int battler);
 int BattleSystem_GetBattlerOfType(BattleSystem *battleSys, int battlerType);
 u8 BattleSystem_GetBattlerType(BattleSystem *battleSys, int battler);
 u8 BattleSystem_GetBattlerSide(BattleSystem *battleSys, int battler);
+BOOL BattleSystem_IsPlayerBattler(BattleSystem *battleSys, int battler);
 PaletteAnimator *BattleSystem_GetPaletteAnimator(BattleSystem *battleSys);
 PCBoxes *BattleSystem_GetPCBoxes(BattleSystem *battleSys);
 

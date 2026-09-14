@@ -83,6 +83,11 @@ void BattleSystem_InitBattleMon(BattleSystem *battleSys, BattleContext *battleCt
         battleCtx->battleMons[battler].moves[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1 + i, NULL);
         battleCtx->battleMons[battler].ppCur[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1_PP + i, NULL);
         battleCtx->battleMons[battler].ppUps[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1_PP_UPS + i, NULL);
+
+        if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) == OPTIONS_UNLIMITED_PP_ON
+            && BattleSystem_IsPlayerBattler(battleSys, battler)) {
+            battleCtx->battleMons[battler].ppCur[i] = MoveTable_CalcMaxPP(battleCtx->battleMons[battler].moves[i], battleCtx->battleMons[battler].ppUps[i]);
+        }
     }
 
     battleCtx->battleMons[battler].hpIV = Pokemon_GetValue(mon, MON_DATA_HP_IV, NULL);
@@ -136,6 +141,12 @@ void BattleSystem_InitBattleMon(BattleSystem *battleSys, BattleContext *battleCt
     battleCtx->battleMons[battler].friendship = Pokemon_GetValue(mon, MON_DATA_FRIENDSHIP, NULL);
     battleCtx->battleMons[battler].curHP = Pokemon_GetValue(mon, MON_DATA_HP, NULL);
     battleCtx->battleMons[battler].maxHP = Pokemon_GetValue(mon, MON_DATA_MAX_HP, NULL);
+
+    if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_IsPlayerBattler(battleSys, battler)) {
+        battleCtx->battleMons[battler].curHP = battleCtx->battleMons[battler].maxHP;
+        Pokemon_SetValue(mon, MON_DATA_HP, &battleCtx->battleMons[battler].maxHP);
+    }
     battleCtx->battleMons[battler].exp = Pokemon_GetValue(mon, MON_DATA_EXPERIENCE, NULL);
     battleCtx->battleMons[battler].personality = Pokemon_GetValue(mon, MON_DATA_PERSONALITY, NULL);
     battleCtx->battleMons[battler].OTId = Pokemon_GetValue(mon, MON_DATA_OT_ID, NULL);
@@ -180,12 +191,23 @@ void BattleSystem_ReloadPokemon(BattleSystem *battleSys, BattleContext *battleCt
     battleCtx->battleMons[battler].curHP = Pokemon_GetValue(mon, MON_DATA_HP, NULL);
     battleCtx->battleMons[battler].maxHP = Pokemon_GetValue(mon, MON_DATA_MAX_HP, NULL);
 
+    if (Options_InvincibleMode(BattleSystem_GetOptions(battleSys)) == OPTIONS_INVINCIBLE_MODE_ON
+        && BattleSystem_IsPlayerBattler(battleSys, battler)) {
+        battleCtx->battleMons[battler].curHP = battleCtx->battleMons[battler].maxHP;
+        Pokemon_SetValue(mon, MON_DATA_HP, &battleCtx->battleMons[battler].maxHP);
+    }
+
     if ((battleCtx->battleMons[battler].statusVolatile & VOLATILE_CONDITION_TRANSFORM) == FALSE) {
         for (int i = 0; i < LEARNED_MOVES_MAX; i++) {
             if ((battleCtx->battleMons[battler].moveEffectsData.mimickedMoveSlot & FlagIndex(i)) == FALSE) {
                 battleCtx->battleMons[battler].moves[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1 + i, NULL);
                 battleCtx->battleMons[battler].ppCur[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1_PP + i, NULL);
                 battleCtx->battleMons[battler].ppUps[i] = Pokemon_GetValue(mon, MON_DATA_MOVE1_PP_UPS + i, NULL);
+
+                if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) == OPTIONS_UNLIMITED_PP_ON
+                    && BattleSystem_IsPlayerBattler(battleSys, battler)) {
+                    battleCtx->battleMons[battler].ppCur[i] = MoveTable_CalcMaxPP(battleCtx->battleMons[battler].moves[i], battleCtx->battleMons[battler].ppUps[i]);
+                }
             }
         }
 
@@ -2264,7 +2286,10 @@ int BattleSystem_CheckInvalidMoves(BattleSystem *battleSys, BattleContext *battl
 
         if (battleCtx->battleMons[battler].ppCur[i] == 0
             && (opMask & CHECK_INVALID_NO_PP)) {
-            invalidMoves |= FlagIndex(i);
+            if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) != OPTIONS_UNLIMITED_PP_ON
+                || !BattleSystem_IsPlayerBattler(battleSys, battler)) {
+                invalidMoves |= FlagIndex(i);
+            }
         }
 
         if (battleCtx->battleMons[battler].moves[i] == battleCtx->battleMons[battler].moveEffectsData.disabledMove
@@ -7387,8 +7412,13 @@ BOOL BattleSystem_TriggerHeldItemOnPivotMove(BattleSystem *battleSys, BattleCont
     return result;
 }
 
-void BattleSystem_DecPPForPressure(BattleContext *battleCtx, int attacker, int defender)
+void BattleSystem_DecPPForPressure(BattleSystem *battleSys, BattleContext *battleCtx, int attacker, int defender)
 {
+    if (Options_UnlimitedPP(BattleSystem_GetOptions(battleSys)) == OPTIONS_UNLIMITED_PP_ON
+        && BattleSystem_IsPlayerBattler(battleSys, attacker)) {
+        return;
+    }
+
     if (defender != BATTLER_NONE
         && Battler_Ability(battleCtx, defender) == ABILITY_PRESSURE
         && battleCtx->battleMons[attacker].ppCur[battleCtx->moveSlot[attacker]]) {
