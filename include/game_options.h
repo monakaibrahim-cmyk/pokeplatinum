@@ -30,7 +30,8 @@ typedef struct Options {
     // Page 4
     u16 invincibleMode : 1;
     u16 unlimitedPP : 1;
-    u16 : 14;
+    u16 oneHitKO : 1;
+    u16 : 13;
 } Options;
 
 Options *Options_New(enum HeapID heapID);
@@ -68,5 +69,7 @@ int Options_InvincibleMode(const Options *options);
 void Options_SetInvincibleMode(Options *options, enum OptionsInvincibleMode mode);
 int Options_UnlimitedPP(const Options *options);
 void Options_SetUnlimitedPP(Options *options, enum OptionsUnlimitedPP mode);
+int Options_OneHitKO(const Options *options);
+void Options_SetOneHitKO(Options *options, enum OptionsOneHitKO mode);
 
 #endif // POKEPLATINUM_GAME_OPTIONS_H

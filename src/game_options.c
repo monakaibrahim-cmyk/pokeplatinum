@@ -44,6 +44,7 @@ void Options_Init(Options *options)
 
     options->invincibleMode = OPTIONS_INVINCIBLE_MODE_OFF;
     options->unlimitedPP = OPTIONS_UNLIMITED_PP_OFF;
+    options->oneHitKO = OPTIONS_ONE_HIT_KO_OFF;
 }
 
 void Options_SetSystemButtonMode(SaveData *saveData, enum OptionsButtonMode mode)
@@ -227,4 +228,14 @@ int Options_UnlimitedPP(const Options *options)
 void Options_SetUnlimitedPP(Options *options, enum OptionsUnlimitedPP mode)
 {
     options->unlimitedPP = mode;
+}
+
+int Options_OneHitKO(const Options *options)
+{
+    return options->oneHitKO;
+}
+
+void Options_SetOneHitKO(Options *options, enum OptionsOneHitKO mode)
+{
+    options->oneHitKO = mode;
 }

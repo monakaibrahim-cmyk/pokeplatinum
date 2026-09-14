@@ -76,6 +76,7 @@ enum OptionsMenuEntryID {
 
     ENTRY_INVINCIBLE_MODE,
     ENTRY_UNLIMITED_PP,
+    ENTRY_ONE_HIT_KO,
 
     ENTRY_CLOSE,
 
@@ -103,6 +104,7 @@ static const u8 sEntryPage[MAX_ENTRIES] = {
 
     [ENTRY_INVINCIBLE_MODE]                 = 3,
     [ENTRY_UNLIMITED_PP]                    = 3,
+    [ENTRY_ONE_HIT_KO]                      = 3,
 
     [ENTRY_CLOSE]                           = 0xFF,
 };
@@ -119,9 +121,9 @@ typedef struct OptionsMenuData {
     int subState;
     int dummy0C;
     u32 saveSelections : 2;
-    u32 cursor : 4;
+    u32 cursor : 5;
     u32 currentPage : 4;
-    u32 dummy10_5 : 16;
+    u32 dummy10_5 : 15;
     u32 redrawMessageBox : 1;
     u32 dummy10_22 : 10;
     u8 entryListOffset;
@@ -162,6 +164,7 @@ typedef struct OptionsMenuData {
 
             OptionsMenuEntry invincibleMode;
             OptionsMenuEntry unlimitedPP;
+            OptionsMenuEntry oneHitKO;
 
             OptionsMenuEntry close;
         };
@@ -233,6 +236,7 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
 
     menuData->options.invincibleMode = Options_InvincibleMode(options);
     menuData->options.unlimitedPP = Options_UnlimitedPP(options);
+    menuData->options.oneHitKO = Options_OneHitKO(options);
 
     menuData->heapID = HEAP_ID_OPTIONS_MENU;
     menuData->saveOptions = options;
@@ -265,6 +269,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
 
         menuData->options.invincibleMode = menuData->entries.invincibleMode.selected;
         menuData->options.unlimitedPP = menuData->entries.unlimitedPP.selected;
+        menuData->options.oneHitKO = menuData->entries.oneHitKO.selected;
     }
 
     Options_SetTextSpeed(menuData->saveOptions, menuData->options.textSpeed);
@@ -285,6 +290,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
 
     Options_SetInvincibleMode(menuData->saveOptions, menuData->options.invincibleMode);
     Options_SetUnlimitedPP(menuData->saveOptions, menuData->options.unlimitedPP);
+    Options_SetOneHitKO(menuData->saveOptions, menuData->options.oneHitKO);
 
     Sound_SetPlaybackMode(menuData->options.soundMode);
     Options_SetSystemButtonMode(NULL, menuData->options.buttonMode);
@@ -792,6 +798,7 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
 
     OptionsMenu_Text_InvincibleLabel,
     OptionsMenu_Text_UnlimitedPPLabel,
+    OptionsMenu_Text_OneHitKOLabel,
 
     OptionsMenu_Text_CloseLabel,
 };
@@ -880,6 +887,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
 
     2, // INVINCIBLE_MODE
     2, // UNLIMITED_PP
+    2, // ONE_HIT_KO
     
     0, // CLOSE
 };
@@ -903,6 +911,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
 
     OptionsMenu_Text_InvincibleOff,
     OptionsMenu_Text_UnlimitedPPOff,
+    OptionsMenu_Text_OneHitKOOff,
 
     NULL,
 };
@@ -935,6 +944,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
 
     menuData->entries.invincibleMode.selected = menuData->options.invincibleMode;
     menuData->entries.unlimitedPP.selected = menuData->options.unlimitedPP;
+    menuData->entries.oneHitKO.selected = menuData->options.oneHitKO;
 }
 
 static const s8 sEntryXOffsets[MAX_ENTRIES] = {
@@ -956,6 +966,7 @@ static const s8 sEntryXOffsets[MAX_ENTRIES] = {
 
     0, // INVINCIBLE_MODE
     0, // UNLIMITED_PP
+    0, // ONE_HIT_KO
     
     0, // CLOSE
 };
@@ -1163,7 +1174,8 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.shinyRate != menuData->entries.shinyRate.selected
         || menuData->options.expRate != menuData->entries.expRate.selected
         || menuData->options.invincibleMode != menuData->entries.invincibleMode.selected
-        || menuData->options.unlimitedPP != menuData->entries.unlimitedPP.selected;
+        || menuData->options.unlimitedPP != menuData->entries.unlimitedPP.selected
+        || menuData->options.oneHitKO != menuData->entries.oneHitKO.selected;
 }
 
 static const WindowTemplate sConfirmationWindowTemplate = {
@@ -1209,6 +1221,7 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
 
     OptionsMenu_Text_InvincibleDescription,
     OptionsMenu_Text_UnlimitedPPDescription,
+    OptionsMenu_Text_OneHitKODescription,
 
     OptionsMenu_Text_CloseDescription,
 };

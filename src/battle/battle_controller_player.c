@@ -1785,6 +1785,12 @@ static void BattleControllerPlayer_CheckSideConditions(BattleSystem *battleSys, 
                 battleCtx->msgMoveTemp = battleCtx->fieldConditions.futureSightMove[battler];
                 battleCtx->hpCalcTemp = battleCtx->fieldConditions.futureSightDamage[battler];
 
+                if (Options_OneHitKO(BattleSystem_GetOptions(battleSys)) == OPTIONS_ONE_HIT_KO_ON
+                    && BattleSystem_IsPlayerBattler(battleSys, battleCtx->msgAttacker)
+                    && BattleSystem_GetBattlerSide(battleSys, battleCtx->msgAttacker) != BattleSystem_GetBattlerSide(battleSys, battler)) {
+                    battleCtx->hpCalcTemp = battleCtx->battleMons[battler].maxHP * -1;
+                }
+
                 PrepareSubroutineSequence(battleCtx, subscript_future_sight_damage);
                 return;
             }
@@ -3373,6 +3379,14 @@ static void BattleControllerPlayer_UpdateHP(BattleSystem *battleSys, BattleConte
         battleCtx->damage = DEFENDING_MON.maxHP * -1;
     }
 
+    BOOL isOneHitKO = (Options_OneHitKO(BattleSystem_GetOptions(battleSys)) == OPTIONS_ONE_HIT_KO_ON
+        && BattleSystem_IsPlayerBattler(battleSys, battleCtx->attacker)
+        && BattleSystem_GetBattlerSide(battleSys, battleCtx->attacker) != BattleSystem_GetBattlerSide(battleSys, battleCtx->defender));
+
+    if (isOneHitKO && battleCtx->damage < 0) {
+        battleCtx->damage = DEFENDING_MON.maxHP * -1;
+    }
+
     if (battleCtx->damage) {
         int itemEffect = Battler_HeldItemEffect(battleCtx, battleCtx->defender);
         int itemPower = Battler_HeldItemPower(battleCtx, battleCtx->defender, 0);
@@ -3412,7 +3426,7 @@ static void BattleControllerPlayer_UpdateHP(BattleSystem *battleSys, BattleConte
             battleCtx->damage = (DEFENDING_MON.curHP - 1) * -1;
         }
 
-        if (DEFENDER_TURN_FLAGS.enduring == 0) {
+        if (!isOneHitKO && DEFENDER_TURN_FLAGS.enduring == 0) {
             if (itemEffect == HOLD_EFFECT_MAYBE_ENDURE && (BattleSystem_RandNext(battleSys) % 100) < itemPower) {
                 DEFENDER_SELF_TURN_FLAGS.focusItemActivated = TRUE;
             }
@@ -3422,7 +3436,7 @@ static void BattleControllerPlayer_UpdateHP(BattleSystem *battleSys, BattleConte
             }
         }
 
-        if ((DEFENDER_TURN_FLAGS.enduring || DEFENDER_SELF_TURN_FLAGS.focusItemActivated)
+        if (!isOneHitKO && (DEFENDER_TURN_FLAGS.enduring || DEFENDER_SELF_TURN_FLAGS.focusItemActivated)
             && DEFENDING_MON.curHP + battleCtx->damage <= 0) {
             battleCtx->damage = (DEFENDING_MON.curHP - 1) * -1;
 

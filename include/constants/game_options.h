@@ -98,4 +98,9 @@ enum OptionsUnlimitedPP {
     OPTIONS_UNLIMITED_PP_ON
 };
 
+enum OptionsOneHitKO {
+    OPTIONS_ONE_HIT_KO_OFF = 0,
+    OPTIONS_ONE_HIT_KO_ON
+};
+
 #endif // POKEPLATINUM_CONSTANTS_GAME_OPTIONS_H
