@@ -553,6 +553,7 @@ BOOL BattleAnimSystem_FreeScriptData(BattleAnimSystem *system)
     }
 
     Heap_Free(system->scriptData);
+    system->scriptData = NULL;
     return TRUE;
 }
 

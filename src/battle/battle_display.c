@@ -206,6 +206,7 @@ typedef struct MonEncounterData {
     BattlerData *battlerData;
     PokemonSprite *sprite;
     Terrain *terrain;
+    BattleAnimSystem *battleAnimSys;
     u8 command;
     u8 battler;
     u8 state;
@@ -237,6 +238,7 @@ void BattleDisplay_InitTaskSetEncounter(BattleSystem *battleSys, BattlerData *ba
     monEncounterData = Heap_Alloc(HEAP_ID_BATTLE, sizeof(MonEncounterData));
 
     monEncounterData->state = 0;
+    monEncounterData->battleAnimSys = NULL;
 
     if (battlerData->battlerType & BATTLER_THEM) {
         monEncounterData->face = FACE_FRONT;
@@ -1727,7 +1729,6 @@ void BattleDisplay_PlayMusic(BattleSystem *battleSys, BattlerData *battlerData, 
 static void Task_SetEncounter(SysTask *task, void *data)
 {
     MonEncounterData *monEncounterData = data;
-    BattleAnimSystem *battleAnimSys = BattleSystem_GetBattleAnimSystem(monEncounterData->battleSys);
     s16 x, y;
 
     switch (monEncounterData->state) {
@@ -1856,8 +1857,9 @@ static void Task_SetEncounter(SysTask *task, void *data)
             if (monEncounterData->isShiny) {
                 MoveAnimation moveAnim;
 
+                monEncounterData->battleAnimSys = BattleAnimSystem_New(HEAP_ID_BATTLE);
                 BattleController_SetMoveAnimation(monEncounterData->battleSys, NULL, &moveAnim, 1, 11, monEncounterData->battler, monEncounterData->battler, NULL);
-                BattleDisplay_PlayMoveAnimation(monEncounterData->battleSys, monEncounterData->battlerData, battleAnimSys, &moveAnim);
+                BattleDisplay_PlayMoveAnimation(monEncounterData->battleSys, monEncounterData->battlerData, monEncounterData->battleAnimSys, &moveAnim);
                 monEncounterData->state = 4;
             } else {
                 monEncounterData->state = 0xFF;
@@ -1865,16 +1867,25 @@ static void Task_SetEncounter(SysTask *task, void *data)
         }
         break;
     case 4:
-        BattleAnimSystem_ExecuteScript(battleAnimSys);
+        BattleAnimSystem_ExecuteScript(monEncounterData->battleAnimSys);
 
-        if (BattleAnimSystem_IsMoveActive(battleAnimSys) == FALSE) {
-            BattleAnimSystem_FreeScriptData(battleAnimSys);
+        if (BattleAnimSystem_IsMoveActive(monEncounterData->battleAnimSys) == FALSE) {
+            BattleAnimSystem_FreeScriptData(monEncounterData->battleAnimSys);
+            BattleAnimSystem_Delete(monEncounterData->battleAnimSys);
+            monEncounterData->battleAnimSys = NULL;
             monEncounterData->state = 0xFF;
         }
         break;
     default:
         Sound_Set2PokemonCriesAllowed(FALSE);
         BattleController_EmitClearCommand(monEncounterData->battleSys, monEncounterData->battler, monEncounterData->command);
+        if (monEncounterData->battleAnimSys != NULL) {
+            if (monEncounterData->battleAnimSys->scriptData != NULL) {
+                BattleAnimSystem_FreeScriptData(monEncounterData->battleAnimSys);
+            }
+            BattleAnimSystem_Delete(monEncounterData->battleAnimSys);
+            monEncounterData->battleAnimSys = NULL;
+        }
         Heap_Free(data);
         SysTask_Done(task);
         break;
@@ -1884,7 +1895,6 @@ static void Task_SetEncounter(SysTask *task, void *data)
 static void Task_SetGiratinaEncounter(SysTask *task, void *data)
 {
     MonEncounterData *monEncounterData = data;
-    BattleAnimSystem *battleAnimSys = BattleSystem_GetBattleAnimSystem(monEncounterData->battleSys);
     s16 x, y;
 
     switch (monEncounterData->state) {
@@ -1949,8 +1959,9 @@ static void Task_SetGiratinaEncounter(SysTask *task, void *data)
             if (monEncounterData->isShiny) {
                 MoveAnimation moveAnim;
 
+                monEncounterData->battleAnimSys = BattleAnimSystem_New(HEAP_ID_BATTLE);
                 BattleController_SetMoveAnimation(monEncounterData->battleSys, NULL, &moveAnim, 1, 11, monEncounterData->battler, monEncounterData->battler, NULL);
-                BattleDisplay_PlayMoveAnimation(monEncounterData->battleSys, monEncounterData->battlerData, battleAnimSys, &moveAnim);
+                BattleDisplay_PlayMoveAnimation(monEncounterData->battleSys, monEncounterData->battlerData, monEncounterData->battleAnimSys, &moveAnim);
                 monEncounterData->state = 4;
             } else {
                 monEncounterData->state = 0xFF;
@@ -1958,16 +1969,25 @@ static void Task_SetGiratinaEncounter(SysTask *task, void *data)
         }
         break;
     case 4:
-        BattleAnimSystem_ExecuteScript(battleAnimSys);
+        BattleAnimSystem_ExecuteScript(monEncounterData->battleAnimSys);
 
-        if (BattleAnimSystem_IsMoveActive(battleAnimSys) == FALSE) {
-            BattleAnimSystem_FreeScriptData(battleAnimSys);
+        if (BattleAnimSystem_IsMoveActive(monEncounterData->battleAnimSys) == FALSE) {
+            BattleAnimSystem_FreeScriptData(monEncounterData->battleAnimSys);
+            BattleAnimSystem_Delete(monEncounterData->battleAnimSys);
+            monEncounterData->battleAnimSys = NULL;
             monEncounterData->state = 0xFF;
         }
         break;
     default:
         Sound_Set2PokemonCriesAllowed(FALSE);
         BattleController_EmitClearCommand(monEncounterData->battleSys, monEncounterData->battler, monEncounterData->command);
+        if (monEncounterData->battleAnimSys != NULL) {
+            if (monEncounterData->battleAnimSys->scriptData != NULL) {
+                BattleAnimSystem_FreeScriptData(monEncounterData->battleAnimSys);
+            }
+            BattleAnimSystem_Delete(monEncounterData->battleAnimSys);
+            monEncounterData->battleAnimSys = NULL;
+        }
         Heap_Free(data);
         SysTask_Done(task);
         break;
