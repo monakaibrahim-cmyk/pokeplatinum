@@ -1404,7 +1404,6 @@ BOOL BattleSystem_TriggerHeldItemOnPivotMove(BattleSystem *battleSys, BattleCont
  * @param attacker
  * @param defender
  */
-void BattleSystem_DecPPForPressure(BattleContext *battleCtx, int attacker, int defender);
 void BattleSystem_DecPPForPressure(BattleSystem *battleSys, BattleContext *battleCtx, int attacker, int defender);
 
 /**
