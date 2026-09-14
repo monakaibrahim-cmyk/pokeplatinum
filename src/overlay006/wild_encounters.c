@@ -31,6 +31,7 @@
 #include "field_overworld_state.h"
 #include "field_system.h"
 #include "field_task.h"
+#include "game_options.h"
 #include "heap.h"
 #include "inlines.h"
 #include "map_header.h"
@@ -269,7 +270,9 @@ BOOL WildEncounters_TryWildEncounter(FieldSystem *fieldSystem)
     ModifyEncounterRateWithFlute(fieldSystem, &encounterRate);
     ModifyEncounterRateWithHeldItem(firstPartyMon, &encounterRate);
 
-    if (ShouldGetRandomEncounter(fieldSystem, encounterRate, tileBehavior)) {
+    if (Options_EncounterMode(SaveData_GetOptions(fieldSystem->saveData)) == OPTIONS_ENCOUNTER_MODE_OFF) {
+        gettingEncounter = FALSE;
+    } else if (ShouldGetRandomEncounter(fieldSystem, encounterRate, tileBehavior)) {
         gettingEncounter = TRUE;
     } else {
         gettingEncounter = FALSE;
@@ -567,6 +570,10 @@ BOOL WildEncounters_TryMudEncounter(FieldSystem *fieldSystem, FieldBattleDTO **b
     RadarEncounterData radarData;
     EncounterSlot encounterTable[MAX_GRASS_ENCOUNTERS];
     WildEncounters_FieldParams encounterFieldParams;
+
+    if (Options_EncounterMode(SaveData_GetOptions(fieldSystem->saveData)) == OPTIONS_ENCOUNTER_MODE_OFF) {
+        return FALSE;
+    }
 
     *battleParams = NULL;
 

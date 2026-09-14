@@ -41,6 +41,7 @@ void Options_Init(Options *options)
     options->evIvMode = OPTIONS_EV_IV_MODE_NORMAL;
     options->shinyRate = OPTIONS_SHINYRATE_NORMAL;
     options->expRate = OPTIONS_EXPRATE_NORMAL;
+    options->encounterMode = OPTIONS_ENCOUNTER_MODE_ON;
 
     options->invincibleMode = OPTIONS_INVINCIBLE_MODE_OFF;
     options->unlimitedPP = OPTIONS_UNLIMITED_PP_OFF;
@@ -208,6 +209,16 @@ int Options_ExpRate(const Options *options)
 void Options_SetExpRate(Options *options, enum OptionsExpRate rate)
 {
     options->expRate = rate;
+}
+
+int Options_EncounterMode(const Options *options)
+{
+    return options->encounterMode;
+}
+
+void Options_SetEncounterMode(Options *options, enum OptionsEncounterMode mode)
+{
+    options->encounterMode = mode;
 }
 
 int Options_InvincibleMode(const Options *options)

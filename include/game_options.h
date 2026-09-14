@@ -25,7 +25,8 @@ typedef struct Options {
     u16 shinyRate : 4;
     u16 evIvMode : 1;
     u16 expRate : 4;
-    u16 : 5;
+    u16 encounterMode : 1;
+    u16 : 4;
 
     // Page 4
     u16 invincibleMode : 1;
@@ -65,6 +66,8 @@ int Options_ShinyRate(const Options *options);
 void Options_SetShinyRate(Options *options, enum OptionsShinyRate rate);
 int Options_ExpRate(const Options *options);
 void Options_SetExpRate(Options *options, enum OptionsExpRate rate);
+int Options_EncounterMode(const Options *options);
+void Options_SetEncounterMode(Options *options, enum OptionsEncounterMode mode);
 int Options_InvincibleMode(const Options *options);
 void Options_SetInvincibleMode(Options *options, enum OptionsInvincibleMode mode);
 int Options_UnlimitedPP(const Options *options);

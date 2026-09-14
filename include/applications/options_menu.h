@@ -23,7 +23,8 @@ typedef struct OptionsMenu {
     u16 shinyRate : 4;
     u16 evIvMode : 1;
     u16 expRate : 4;
-    u16 : 5;
+    u16 encounterMode : 1;
+    u16 : 4;
 
     // Page 4
     u16 invincibleMode : 1;

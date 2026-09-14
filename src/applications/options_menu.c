@@ -73,6 +73,7 @@ enum OptionsMenuEntryID {
     ENTRY_EV_IV_MODE,
     ENTRY_SHINY_RATE,
     ENTRY_EXP_RATE,
+    ENTRY_ENCOUNTER_MODE,
 
     ENTRY_INVINCIBLE_MODE,
     ENTRY_UNLIMITED_PP,
@@ -101,6 +102,7 @@ static const u8 sEntryPage[MAX_ENTRIES] = {
     [ENTRY_EV_IV_MODE]                      = 2,
     [ENTRY_SHINY_RATE]                      = 2,
     [ENTRY_EXP_RATE]                        = 2,
+    [ENTRY_ENCOUNTER_MODE]                  = 2,
 
     [ENTRY_INVINCIBLE_MODE]                 = 3,
     [ENTRY_UNLIMITED_PP]                    = 3,
@@ -161,6 +163,7 @@ typedef struct OptionsMenuData {
             OptionsMenuEntry evIvMode;
             OptionsMenuEntry shinyRate;
             OptionsMenuEntry expRate;
+            OptionsMenuEntry encounterMode;
 
             OptionsMenuEntry invincibleMode;
             OptionsMenuEntry unlimitedPP;
@@ -233,6 +236,7 @@ BOOL OptionsMenu_Init(ApplicationManager *appMan, int *state)
     menuData->options.evIvMode = Options_EvIvMode(options);
     menuData->options.shinyRate = Options_ShinyRate(options);
     menuData->options.expRate = Options_ExpRate(options);
+    menuData->options.encounterMode = Options_EncounterMode(options);
 
     menuData->options.invincibleMode = Options_InvincibleMode(options);
     menuData->options.unlimitedPP = Options_UnlimitedPP(options);
@@ -266,6 +270,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
         menuData->options.evIvMode = menuData->entries.evIvMode.selected;
         menuData->options.shinyRate = menuData->entries.shinyRate.selected;
         menuData->options.expRate = menuData->entries.expRate.selected;
+        menuData->options.encounterMode = menuData->entries.encounterMode.selected;
 
         menuData->options.invincibleMode = menuData->entries.invincibleMode.selected;
         menuData->options.unlimitedPP = menuData->entries.unlimitedPP.selected;
@@ -287,6 +292,7 @@ BOOL OptionsMenu_Exit(ApplicationManager *appMan, int *state)
     Options_SetEvIvMode(menuData->saveOptions, menuData->options.evIvMode);
     Options_SetShinyRate(menuData->saveOptions, menuData->options.shinyRate);
     Options_SetExpRate(menuData->saveOptions, menuData->options.expRate);
+    Options_SetEncounterMode(menuData->saveOptions, menuData->options.encounterMode);
 
     Options_SetInvincibleMode(menuData->saveOptions, menuData->options.invincibleMode);
     Options_SetUnlimitedPP(menuData->saveOptions, menuData->options.unlimitedPP);
@@ -795,6 +801,7 @@ static const u8 sEntryLabels[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeLabel,
     OptionsMenu_Text_ShinyRateLabel,
     OptionsMenu_Text_ExpRateLabel,
+    OptionsMenu_Text_EncounterModeLabel,
 
     OptionsMenu_Text_InvincibleLabel,
     OptionsMenu_Text_UnlimitedPPLabel,
@@ -884,6 +891,7 @@ static const int sNumChoicesPerEntry[MAX_ENTRIES] = {
     2, // EV_IV_MODE
     3, // SHINY_RATE
     3, // EXP_RATE
+    2, // ENCOUNTER_MODE
 
     2, // INVINCIBLE_MODE
     2, // UNLIMITED_PP
@@ -908,6 +916,7 @@ static const u8 sFirstChoicePerEntry[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeNormal,
     OptionsMenu_Text_ShinyRateNormal,
     OptionsMenu_Text_ExpRateNormal,
+    OptionsMenu_Text_EncounterModeOn,
 
     OptionsMenu_Text_InvincibleOff,
     OptionsMenu_Text_UnlimitedPPOff,
@@ -941,6 +950,7 @@ static void LoadAllEntryChoices(OptionsMenuData *menuData)
     menuData->entries.evIvMode.selected = menuData->options.evIvMode;
     menuData->entries.shinyRate.selected = menuData->options.shinyRate;
     menuData->entries.expRate.selected = menuData->options.expRate;
+    menuData->entries.encounterMode.selected = menuData->options.encounterMode;
 
     menuData->entries.invincibleMode.selected = menuData->options.invincibleMode;
     menuData->entries.unlimitedPP.selected = menuData->options.unlimitedPP;
@@ -963,6 +973,7 @@ static const s8 sEntryXOffsets[MAX_ENTRIES] = {
     0, // EV_IV_MODE
     0, // SHINY_RATE
     0, // EXP_RATE
+    0, // ENCOUNTER_MODE
 
     0, // INVINCIBLE_MODE
     0, // UNLIMITED_PP
@@ -1173,6 +1184,7 @@ static BOOL ChangesWereMade(OptionsMenuData *menuData)
         || menuData->options.evIvMode != menuData->entries.evIvMode.selected
         || menuData->options.shinyRate != menuData->entries.shinyRate.selected
         || menuData->options.expRate != menuData->entries.expRate.selected
+        || menuData->options.encounterMode != menuData->entries.encounterMode.selected
         || menuData->options.invincibleMode != menuData->entries.invincibleMode.selected
         || menuData->options.unlimitedPP != menuData->entries.unlimitedPP.selected
         || menuData->options.oneHitKO != menuData->entries.oneHitKO.selected;
@@ -1218,6 +1230,7 @@ static const u8 sEntryDescriptions[MAX_ENTRIES] = {
     OptionsMenu_Text_EvIvModeDescription,
     OptionsMenu_Text_ShinyRateDescription,
     OptionsMenu_Text_ExpRateDescription,
+    OptionsMenu_Text_EncounterModeDescription,
 
     OptionsMenu_Text_InvincibleDescription,
     OptionsMenu_Text_UnlimitedPPDescription,

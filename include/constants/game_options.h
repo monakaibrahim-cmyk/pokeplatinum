@@ -88,6 +88,11 @@ enum OptionsExpRate {
     OPTIONS_EXPRATE_HIGH
 };
 
+enum OptionsEncounterMode {
+    OPTIONS_ENCOUNTER_MODE_ON = 0,
+    OPTIONS_ENCOUNTER_MODE_OFF,
+};
+
 enum OptionsInvincibleMode {
     OPTIONS_INVINCIBLE_MODE_OFF = 0,
     OPTIONS_INVINCIBLE_MODE_ON

@@ -376,6 +376,22 @@
       ]
     },
     {
+      "id": "OptionsMenu_Text_EncounterModeLabel",
+      "en_US": "NO ENCOUNTER"
+    },
+    {
+      "id": "OptionsMenu_Text_EncounterModeOn",
+      "en_US": "ON"
+    },
+    {
+      "id": "OptionsMenu_Text_EncounterModeOff",
+      "en_US": "OFF"
+    },
+    {
+      "id": "OptionsMenu_Text_EncounterModeDescription",
+      "en_US": "Disable random wild encounters."
+    },
+    {
       "id": "OptionsMenu_Text_InvincibleLabel",
       "en_US": "INVINCIBLE MODE"
     },
